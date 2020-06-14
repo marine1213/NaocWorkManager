@@ -14,6 +14,8 @@
 	<!-------- CSS goes here ---------->
 	<!-- Compiled and minified MaterializeCSS -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<!-- Firebase CSS -->
+	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth.css" />
 	<!-- W3 CSS -->
 	<!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">  -->
 	<!-- <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-green.css"> -->
@@ -292,23 +294,10 @@
 	     https://firebase.google.com/docs/web/setup#available-libraries -->
 	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
 
-	<script>
-	  // Your web app's Firebase configuration
-	  var firebaseConfig = {
-	    apiKey: "AIzaSyAc209gF_vDTZdjLi7VTusnKipdFcp3tNc",
-	    authDomain: "naocworkmanager.firebaseapp.com",
-	    databaseURL: "https://naocworkmanager.firebaseio.com",
-	    projectId: "naocworkmanager",
-	    storageBucket: "naocworkmanager.appspot.com",
-	    messagingSenderId: "753176498410",
-	    appId: "1:753176498410:web:0b1f4b9e42feb981178793",
-	    measurementId: "G-YJ5N6D8FK6"
-	  };
-	  // Initialize Firebase
-	  firebase.initializeApp(firebaseConfig);
-	  firebase.analytics();
-	</script>
-	
+	<script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vn.js"></script>
+
+	<script src="lib/firebaseScript.js"></script>
+
 	<script description="UI standalone">
 		itemStateSelected=(p)=>{
 			var cont=p.elm.parentElement.parentElement.nextElementSibling;
