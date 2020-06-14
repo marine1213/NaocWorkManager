@@ -1,0 +1,75 @@
+/*This contains:custom_lib+custom_scrollbar*/
+/*description="custom-lib"*/
+	.hidden{display: none;}
+	.unseen{visibility: hidden;}
+	.divider{background-color: #282d2f; height: 1px}
+
+	.pad10p{padding: 10px}
+	.bot12p{padding-bottom: 12px}
+	.bot10p{padding-bottom: 10px}
+	.padAvatar{padding: 2px; padding-right: 8px}
+	.pR4px{padding-right: 4px}
+	.pLR15px{padding: 5px 5px 5px 15px}
+
+	.m0px{margin: 0}
+
+	.txOnImg{text-shadow: 1px 1px #000;}
+	.txBold{font-weight: bold;}
+	.subTx{color: #595b5c}
+	.txCenter{text-align: center;}
+
+	.txLarge{font-size: 22px}
+	.txSmall{font-size: 12px}
+	.txxLarge{font-size: 24px}
+
+	.fullh{height: 100%}
+	.progressHeight{height: 8px}
+
+	.width80{width: 80%}
+	.width70{width: 70%}
+	.width30{width: 30%}
+	.width15{width: 15%}
+
+	.txWhite{color: white}
+	.txBlack{color: black}
+	
+	.overYAuto{overflow-y: auto;}
+	.lv4{z-index:4}
+	label{font-size: 12px}
+/*=======================================*/
+
+/*description="circle"*/
+	/*Credit to: https://stackoverflow.com/questions/55281672/make-plus-symbol-in-css*/
+	.mplus {
+		display:inline-block;width:18px;height: 18px;
+		margin: 3px 6px 3px 0;
+
+	  background:linear-gradient(#4caf50,#4caf50),linear-gradient(#4caf50,#4caf50);
+	  background-position:center;
+	  background-size: 90% 4px,4px 90%;
+	  background-repeat:no-repeat;
+	}
+
+	.mplus-alt {
+		display:inline-block;width:18px;height: 18px;
+		margin: 3px 6px 3px 0;
+
+	  background:linear-gradient(#000,#000),linear-gradient(#000,#000);
+	  background-position:center;
+	  background-size: 90% 4px,4px 90%;
+	  background-repeat:no-repeat;
+	}
+	.radius {border-radius:50%}
+/*=======================================*/
+
+/*description="custom-scrollbar"*/
+	/* Credit to: https://css-tricks.com/examples/WebKitScrollbars/*/
+	::-webkit-scrollbar {width: 12px;}
+
+	/* Track */
+	::-webkit-scrollbar-track {-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); -webkit-border-radius: 10px;border-radius: 10px;}
+
+	/* Handle */
+	::-webkit-scrollbar-thumb {-webkit-border-radius: 10px;border-radius: 10px;background: #595b5ccc;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5)}
+	::-webkit-scrollbar-thumb:window-inactive {visibility: hidden}
+/*=======================================*/
