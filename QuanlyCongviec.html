@@ -4,7 +4,22 @@
 	<title>Quản lý công việc</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width,initial-scale=1">
+	
+	<!-------- Firebase and login checking go here ---------->
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
 
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+	     https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
+
+	<!-- firebase authentication -->
+	<script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vi.js"></script>
+	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth.css" />
+
+	<script src="lib/logScript.js"></script>
+	<script src="lib/firebaseScript.js"></script>
 	<!-------- Fonts go here ---------->
 	<!--Import Google Icon Font-->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -62,7 +77,7 @@
 	</style>
 	
 </head>
-<body class="fullh" onresize="logF(onScreenResize)">
+<body class="fullh unseen" onresize="logF(onScreenResize)">
 	
 	<!-- Overlay -->
   <div class="w3-overlay" onclick="" style="cursor:pointer" id="idOverlay"></div>
@@ -187,9 +202,10 @@
 		<!-- Navigation bar -->
 	  <div class="w3-row w3-top">
 	    <div class="w3-row w3-theme txxLarge w3-col s12">
-	      <div class="w3-bar w3-col s10 m6 w3-text-white">
+	      <div class="w3-bar w3-col s12 w3-text-white">
 	        <a class="w3-bar-item w3-button w3-hover-theme" onclick="logF(onMenuClick)"><i class="fa fa-bars" id="idMenu"></i></a>
 	        <span class="w3-bar-item">Quản Lý Công việc</span>  
+	        <a class="w3-right txSmall pad10p" href="" onclick="onSignOut();return false;">Đăng xuất</a>
 	      </div>
 	    </div>
 		</div>
@@ -277,26 +293,29 @@
 			<script description="listControl">
 				var obDulieu={};
 				initDulieuUI=()=>{initElm(obDulieu,['e','list','plus'],['idMainDulieu','idMainList','idAddDulieuList']);}
-				popDulieu=()=>{}
+				popDulieu=()=>{
+					var item={
+						id:{code:'',rowIndex:'',ten:''},
+						noidung:{tomtat:'Bao tri he thong Trunking',daydu:'+Kiem tra may tinh ghi am'},
+						tinhtrang: {code:2,tx:'Đang thực hiện'},
+						tags:['Quá hạn','Hết hạn hôm nay','Từ 28/02'],
+						giaoviec:{
+							ngaygiao:{short:'28/02'},
+							nguoigiao:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+							chutri:{id:'',rowIndex:'',ten:'Hien',email:'',chucdanh:'',donvi:''},
+							thoihan:{full:'',short:''},
+					}
+					addItemDulieu(item,0);
+				}
 				addItemDulieu=(item,index)=>{
-					var elmTags=(Object.keys(item.tags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${item.tags[k]}</a>`;})).join('<a class="pR4px">'); var elmItem=`<li> <div class="pLR15px collapsible-header" > <div class="w3-cell-row"> <div class="w3-cell m0px width70"> <p><label><input type="checkbox"/><span class="pR4px txBlack">${item.noidung.tomtat}</span></label>${elmTags}</p> </div> <div class="w3-cell width15"><p>${item.giaoviec.ngaygiao.short}</p></div> <div class="w3-cell width15"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div> </div> </div> <div class="pLR15px collapsible-body m0px"> <div class="w3-cell-row"> <div class="w3-cell w3-hide-medium w3-hide-large"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.thuchien.nguoithuchien.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width70 w3-hide-small"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width15 w3-hide-small"><p>${item.giaoviec.thoihan.short}</p> </div> <div class="w3-cell width15 w3-hide-small"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p> </div> </div> <div class="w3-cell-row bot10p"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditToggle,{elm:this,index:${index}})">Sửa nội dung</button></div> </div> <form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}"> <div class="w3-col s12 m4 w3-container"> <label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}"> </div> <div class="w3-col s12 m4 w3-container"> <label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}"> </div> <div class="w3-col s8 m4 w3-container"> <label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea> </div> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditTask,{index:${index}})">Xác nhận sửa</button></div> </div> </form> <hr> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-blue" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div> <div class="w3-cell w3-center"><button class="w3-button w3-orange" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div> </div> <div class="hidden"> <form class="w3-row hidden hoanthanhForm"> <div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div> <div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div> <div class="w3-col s11"><label>Ghi chú</label><textarea class="materialize-textarea ghichu"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div> </form> <form class="w3-row hidden tamdungForm"> <div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div> </form> </div> </div> </li>`;
+					var elmTags=(Object.keys(item.tags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${item.tags[k]}</a>`;})).join('<a class="pR4px">'); 
+					var elmItem=`<li> <div class="pLR15px collapsible-header" > <div class="w3-cell-row"> <div class="w3-cell m0px width70"> <p><label><input type="checkbox"/><span class="pR4px txBlack">${item.noidung.tomtat}</span></label>${elmTags}</p> </div> <div class="w3-cell width15"><p>${item.giaoviec.ngaygiao.short}</p></div> <div class="w3-cell width15"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div> </div> </div> <div class="pLR15px collapsible-body m0px"> <div class="w3-cell-row"> <div class="w3-cell w3-hide-medium w3-hide-large"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.thuchien.nguoithuchien.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width70 w3-hide-small"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width15 w3-hide-small"><p>${item.giaoviec.thoihan.short}</p> </div> <div class="w3-cell width15 w3-hide-small"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p> </div> </div> <div class="w3-cell-row bot10p"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditToggle,{elm:this,index:${index}})">Sửa nội dung</button></div> </div> <form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}"> <div class="w3-col s12 m4 w3-container"> <label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}"> </div> <div class="w3-col s12 m4 w3-container"> <label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}"> </div> <div class="w3-col s8 m4 w3-container"> <label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea> </div> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditTask,{index:${index}})">Xác nhận sửa</button></div> </div> </form> <hr> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-blue" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div> <div class="w3-cell w3-center"><button class="w3-button w3-orange" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div> </div> <div class="hidden"> <form class="w3-row hidden hoanthanhForm"> <div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div> <div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div> <div class="w3-col s11"><label>Ghi chú</label><textarea class="materialize-textarea ghichu"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div> </form> <form class="w3-row hidden tamdungForm"> <div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div> </form> </div> </div> </li>`;
 					obDulieu.plus.insertAdjacentHTML('afterend',elmItem);
 				}
 			</script>
 
 		</div>
 	</div>
-
-	<!-- The core Firebase JS SDK is always required and must be listed first -->
-	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
-
-	<!-- TODO: Add SDKs for Firebase products that you want to use
-	     https://firebase.google.com/docs/web/setup#available-libraries -->
-	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
-
-	<script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vn.js"></script>
-
-	<script src="lib/firebaseScript.js"></script>
 
 	<script description="UI standalone">
 		itemStateSelected=(p)=>{
@@ -324,10 +343,35 @@
 		setMainSolieu=()=>{drawChart()};//bug here When sidebarItem selected
 	</script>
 	<script description="dataProcess">
-		
+		loadData=()=>{
+
+		}
+		// sidebar add user data
+
+		// sidebar add group
+
+		// sidebar add item
+
+		// list add item
+
+
+		dataAddTask=(p)=>{alert(p.index);}
+		dataEditTask=(p)=>{alert(p.index);}
+		dataSubmitTask=(p)=>{alert(p.index);}
+
+		// solieu add data
+
+		// ban do add data
+	</script>
+	<script description="dataPrototype">
+		User=(param)=>{
+			var thisObject = this;
+			['ten','email','acvId','uid','rowIndex','chucdanh','donvi','maquyen'].forEach((k)=>{thisObject[k]=param[k]});
+		}
+		setMainDataUser=(user)=>{mainData.user=user}
 		var modifiedData;
 		var mainData = {
-			user:{id:'ACV0080',rowIndex:'10',ten:'Nguyễn Mạnh Cường',email:'Cuongbk56@gmail.com',chucdanh:'Kỹ sư',donvi:'Đội Thiết bị Thông tin dẫn đường',maquyen:''}, 
+			user:{},
 			congviecList:[{
 				id:{code:'',rowIndex:'',ten:''},
 				noidung:{tomtat:'',daydu:''},
@@ -353,10 +397,6 @@
 				quahan:{idList:[2],phantram:33.3}}},
 			],
 		};
-
-		dataAddTask=(p)=>{alert(p.index);}
-		dataEditTask=(p)=>{alert(p.index);}
-		dataSubmitTask=(p)=>{alert(p.index);}
 	</script>
 	<script description='viewControl'>
 		var obDoc = {d:document,de:document.documentElement};
@@ -377,8 +417,10 @@
   <script src="lib/testScript.js"></script>
   
   <script>
+  	//Credit to:https://stackoverflow.com/questions/8835413/difference-between-load-vs-domcontentloaded
   	document.addEventListener("DOMContentLoaded", ()=>{
-  		logF(initScriptMaterialize);logF(initScriptUI);
+  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);}});
+  		loadData();
 			// dumpMemToUi(); 
 		});
   </script>
