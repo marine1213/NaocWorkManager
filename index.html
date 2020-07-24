@@ -4,7 +4,22 @@
 	<title>Quản lý công việc</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width,initial-scale=1">
+	
+	<!-------- Firebase and login checking go here ---------->
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
 
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+	     https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
+
+	<!-- firebase authentication -->
+	<script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vi.js"></script>
+	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth.css" />
+
+	<script src="lib/logScript.js"></script>
+	<script src="lib/firebaseScript.js"></script>
 	<!-------- Fonts go here ---------->
 	<!--Import Google Icon Font-->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -22,6 +37,7 @@
 
   <link rel="stylesheet" type="text/css" href="lib/w3.css">
   <link rel="stylesheet" type="text/css" href="lib/w3-theme-green.css">
+  <link rel="stylesheet" type="text/css" href="lib/lds-spinner.css">
   <link rel="stylesheet" type="text/css" href="lib/custom.css">
 	
 	<style type="text/css" description="specific-custom">
@@ -40,12 +56,14 @@
 		input.searchDark:focus{color: #fff;}
 
 		.stThuchien{background-color: #109618; color: #fff; opacity: 0.75}
-		.stChoduyet{background-color: #990099; color: #fff; opacity: 0.75}
+		.stChoduyet{background-color: #02a99a; color: #fff; opacity: 0.9}
 		.stHoanthanh{background-color: #3366cc; color: #fff; opacity: 0.75}
-		.stQuahan,.stKetthuc{background-color: #dc3912; color: #fff; opacity: 0.75}
+		.stQuahan{background-color: #dc3912; color: #fff; opacity: 0.75}
+		.stKetthuc{background-color: #855e58; color: #fff; opacity: 0.75}
+		.stHethan{background-color: #dc3912; color: #fff; opacity: 0.75}
 		.stTamdung{background-color: #ff9900; color: #000; opacity: 0.75}
 		.stMoi{background-color: #0099c6; color: #fff; opacity: 0.75}
-		.stBatdau{background-color: grey; color: #fff; opacity: 0.75}
+		.stBatdau{background-color: #6e8a42; color: #fff; opacity: 0.75}
 	
 		#idSidebar{background-color: #252a2d; color: #797a7b; width: 25%}
 		#idSidebarSearch{background-color: #202527; color: #fff; width: 100%}
@@ -62,12 +80,15 @@
 	</style>
 	
 </head>
-<body class="fullh" onresize="logF(onScreenResize)">
+<body class="fullh unseen" onresize="logF(onScreenResize)">
 	
 	<!-- Overlay -->
-  <div class="w3-overlay" onclick="" style="cursor:pointer" id="idOverlay"></div>
+  <div class="w3-overlay w3-display-container" onclick="" style="cursor:pointer" id="idOverlay">
+  	<div class="lds-spinner w3-display-middle"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+  </div>
+
   <script description="Overlay">
-  	var obOverlay = {};initOverlay=()=>{initElm(obOverlay,['e'],['idOverlay'])}
+  	var obOverlay = {};initOverlay=()=>{initElm(obOverlay,['e'],['idOverlay']);}
   	overlayAppear=()=>{obOverlay.es.display="block"} 
   	overlayDisappear=()=>{obOverlay.es.display="none";}
   </script>
@@ -92,9 +113,10 @@
 		<!-- User Avatar And Information -->
 		<div class="w3-display-bottomleft  w3-text-white w3-row" id="idSidebarUserPanel">
 				<div class="w3-col s12 divider"></div>
-				<img src="https://www.w3schools.com/w3css/img_avatar1.png" class="show400px w3-col s3 w3-circle pad10p">
+				<img id="idUserImg" class="show400px w3-col s3 w3-circle pad10p">
 	      <div class="w3-col s9 w3-container txOnImg txBold pad10p" >
 	      	<a id="idUserName">Nguyễn Mạnh Cường</a><br>
+	      	<a id="idUserSubName">Nguyễn Mạnh Cường</a><br>
 					<a id="idSignedInEmail" class="w3-small">Cuongbk56@gmail.com</a><br>
       		<a id="idDonvi" class="w3-small subTx">Đội Thiết bị Thông tin Dẫn đường</a><br>
 				</div>  
@@ -106,17 +128,19 @@
 			{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng']},
 			{n:'Dự án',i:['Cải tạo đường lăn S1','Bảo trì ILS/DME','Bảo trì hệ thống Trunking']}]};
 
-		const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idSignedInEmail','idDonvi'];
-		const objKList=['e','search','userEl','c','userName','userSignedInEmail','userDonvi'];
+		const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idUserSubName',
+										'idSignedInEmail','idDonvi','idUserImg'];
+		const objKList=['e','search','userEl','c','userName','userSubName','userSignedInEmail','userDonvi','userImg'];
 		initSideBar=()=>{
 			initElm(obSidebar,objKList,domKList);
 			obSidebar.gr=obSidebar.e.getElementsByClassName('sidebarGroup');sidebarPopulateContent();
 			setUserInf();sidebarItemClick({g:0,i:0});
 		};
 
-		const userObjKlist=['userName','userSignedInEmail','userDonvi'];
-		const userDataKlist=['ten','email','donvi'];
-		setUserInf=()=>{userObjKlist.map((k,ind)=>{obSidebar[k].innerHTML=mainData.user[userDataKlist[ind]]});}
+		const userObjKlist=['userName','userSubName','userSignedInEmail','userDonvi'];
+		const userDataKlist=['ten','tenkhac','email','donvi'];
+		setUserInf=()=>{userObjKlist.map((k,ind)=>{obSidebar[k].innerHTML=mainData.user[userDataKlist[ind]]});setUserImg();}
+		setUserImg=()=>{obSidebar.userImg.src=(mainData.user.img==undefined||mainData.user.img=='')?'https://www.w3schools.com/w3css/img_avatar1.png':mainData.user.img};
 
 		getSidebarSize=()=>{var vw=obView.vw();return vw>1267?'25%':(vw<431?'80%':vw<636?'70%':vw<800?'50%':vw<1065?'40%':'30%');}
 		setSidebarcontentHeight=()=>{obSidebar.cs.maxHeight=(obView.vh()-(obSidebar.search.offsetHeight+obSidebar.userEl.offsetHeight))+'px'};
@@ -187,9 +211,10 @@
 		<!-- Navigation bar -->
 	  <div class="w3-row w3-top">
 	    <div class="w3-row w3-theme txxLarge w3-col s12">
-	      <div class="w3-bar w3-col s10 m6 w3-text-white">
+	      <div class="w3-bar w3-col s12 w3-text-white">
 	        <a class="w3-bar-item w3-button w3-hover-theme" onclick="logF(onMenuClick)"><i class="fa fa-bars" id="idMenu"></i></a>
 	        <span class="w3-bar-item">Quản Lý Công việc</span>  
+	        <a class="w3-right txSmall pad10p" href="" onclick="onSignOut();return false;">Đăng xuất</a>
 	      </div>
 	    </div>
 		</div>
@@ -265,7 +290,7 @@
 									<label for="idNoidungchitiet">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet"></textarea>
 								</div>
 								<div class="w3-cell-row">
-									<div class="w3-cell w3-center" ><button class="w3-button w3-blue" type="button" onclick="logF(dataAddTask,{index:-1})">Giao việc</button></div>
+									<div class="w3-cell w3-center" ><button class="w3-button w3-blue" type="button" onclick="logF(dataGetUI,{elm:this,index:-1})">Giao việc</button></div>
 								</div>
 							</form>
 						</div>
@@ -273,32 +298,133 @@
 					<!-- CongviecItem--see CongviecItem for more detail -->
 					
 				</ul>
+
 			</div>
 			<script description="listControl">
 				var obDulieu={};
 				initDulieuUI=()=>{initElm(obDulieu,['e','list','plus'],['idMainDulieu','idMainList','idAddDulieuList']);}
-				popDulieu=()=>{}
+
+				updateListDulieu=(items)=>{emptyListDulieu();addListDulieu(items)}
+				emptyListDulieu=()=>Array.from(obDulieu.list.getElementsByClassName('classMainListItem')).forEach((item)=>{item.remove()});
+				addListDulieu=(items)=>{items.forEach((item,itemIdx)=>addItemDulieu(item,itemIdx));}
 				addItemDulieu=(item,index)=>{
-					var elmTags=(Object.keys(item.tags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${item.tags[k]}</a>`;})).join('<a class="pR4px">'); var elmItem=`<li> <div class="pLR15px collapsible-header" > <div class="w3-cell-row"> <div class="w3-cell m0px width70"> <p><label><input type="checkbox"/><span class="pR4px txBlack">${item.noidung.tomtat}</span></label>${elmTags}</p> </div> <div class="w3-cell width15"><p>${item.giaoviec.ngaygiao.short}</p></div> <div class="w3-cell width15"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div> </div> </div> <div class="pLR15px collapsible-body m0px"> <div class="w3-cell-row"> <div class="w3-cell w3-hide-medium w3-hide-large"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.thuchien.nguoithuchien.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width70 w3-hide-small"> <p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p> <p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p> <p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p> <p><b>Nội dung chi tiết:</b></p> <p>${item.noidung.daydu}</p> <p>+ Kiểm tra tình trạng ghi âm </p> <p>+ Kiểm tra hệ thống tổng đài</p> </div> <div class="w3-cell width15 w3-hide-small"><p>${item.giaoviec.thoihan.short}</p> </div> <div class="w3-cell width15 w3-hide-small"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p> </div> </div> <div class="w3-cell-row bot10p"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditToggle,{elm:this,index:${index}})">Sửa nội dung</button></div> </div> <form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}"> <div class="w3-col s12 m4 w3-container"> <label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}"> </div> <div class="w3-col s12 m4 w3-container"> <label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}"> </div> <div class="w3-col s8 m4 w3-container"> <label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}"> </div> <div class="w3-col s12 w3-container"> <label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea> </div> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditTask,{index:${index}})">Xác nhận sửa</button></div> </div> </form> <hr> <div class="w3-cell-row"> <div class="w3-cell w3-center" ><button class="w3-button w3-blue" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div> <div class="w3-cell w3-center"><button class="w3-button w3-orange" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div> </div> <div class="hidden"> <form class="w3-row hidden hoanthanhForm"> <div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div> <div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div> <div class="w3-col s11"><label>Ghi chú</label><textarea class="materialize-textarea ghichu"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div> </form> <form class="w3-row hidden tamdungForm"> <div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div> <div class="w3-cell-row"> <div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div> </form> </div> </div> </li>`;
+					var elmTags=tagAnalysis(item);
+					var elmExtend=item.thuchien.ok.length>0?(
+						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Thực hiện</b></h4><p><b>Người thực hiện: </b>${item.thuchien.nguoithuchien.hoten}</p>
+						<p><b>Ngày hoàn thành: </b>${item.thuchien.ngayhoanthanh.full}</p>
+						<p><b>Kết quả thực hiện: </b></p><p>${item.thuchien.ketqua.split('\n').join('</p><p>')}</p></div>`
+					+(item.thuchien.pheduyet.ok.length>0?
+						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Phê duyệt Hoàn thành:</b></h4><p>
+						<p><b>Người phê duyệt: </b>${item.thuchien.pheduyet.nguoipheduyet.hoten}</p>
+						<p><b>Ngày phê duyệt: </b>${item.thuchien.pheduyet.ngaypheduyet.full}</p>
+						<p><b>Nội dung: </b></p><p>${item.thuchien.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
+					elmExtend+=item.tamdung.ok.length>0?(
+						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Tạm dừng</b></h4><p><b>Người xin tạm dừng: </b>${item.tamdung.nguoixintamdung.hoten}</p>
+						<p><b>Ngày xin tạm dừng: </b>${item.tamdung.ngayxintamdung.full}</p>
+						<p><b>Lý do tạm dừng: </b></p><p>${item.tamdung.lydo.split('\n').join('</p><p>')}</p></div>`
+					+(item.tamdung.pheduyet.ok.length>0?
+						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Phê duyệt Tạm dừng:</b></h4><p>
+						<p><b>Người phê duyệt: </b>${item.tamdung.pheduyet.nguoipheduyet.hoten}</p>
+						<p><b>Ngày phê duyệt: </b>${item.tamdung.pheduyet.ngaypheduyet.full}</p>
+						<p><b>Nội dung: </b></p><p>${item.tamdung.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
+
+					var elmItem=`<li class="classMainListItem">
+						<div class="pLR15px collapsible-header" >
+							<div class="w3-cell-row">
+								<div class="w3-cell m0px width70">
+									<p><label><input type="checkbox"/><span class="pR4px txBlack">${item.noidung.tomtat}</span></label>${elmTags}</p>
+								</div>
+								<div class="w3-cell w3-cell-middle width15 txCenter"><p>${item.giaoviec.ngaygiao.short}</p></div>
+								<div class="w3-cell w3-cell-middle width15 txLeft"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div>
+							</div>
+						</div>
+						<div class="pLR15px collapsible-body m0px">
+							<div class="w3-cell-row">
+								<div class="w3-cell w3-hide-medium w3-hide-large">
+									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
+									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
+									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
+									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
+									<p><b>Nội dung chi tiết:</b></p>
+									<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>
+								</div>
+								<div class="w3-cell width70 w3-hide-small">
+									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
+									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
+									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
+									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
+									<p><b>Nội dung chi tiết:</b></p>
+									<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>
+								</div>
+								<div class="w3-cell w3-cell-middle width15 w3-hide-small txCenter"><p>${item.giaoviec.thoihan.short}</p>
+								</div>
+								<div class="w3-cell w3-cell-middle width15 w3-hide-small txLeft"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p>
+								</div>
+							</div>
+							<div class="w3-row fullw">${elmExtend}</div>
+							<div class="w3-cell-row bot10p">
+								<div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataEditToggle,{elm:this})">Sửa nội dung</button></div>
+							</div>
+							<form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}">
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}">
+								</div>
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}">
+								</div>
+								<div class="w3-col s8 m4 w3-container">
+									<label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}">
+								</div>
+								<div class="w3-col s12 w3-container">
+									<label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}">
+								</div>
+								<div class="w3-col s12 w3-container">
+									<label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea>
+								</div>
+								<div class="w3-cell-row">
+									<div class="w3-cell w3-center" ><button class="w3-button w3-green" type="button" onclick="logF(dataGetUI,{elm:this,index:${index}})">Xác nhận sửa</button></div>
+								</div>
+							</form>
+							<hr>
+							<div class="w3-cell-row">
+								<div class="w3-cell w3-center" ><button class="w3-button w3-blue" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div>
+								<div class="w3-cell w3-center"><button class="w3-button w3-orange" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div>
+							</div>
+							<div class="hidden">
+								<form class="w3-row hidden hoanthanhForm">
+									<div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div>
+									<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div>
+									<div class="w3-col s11"><label>Ghi chú</label><textarea class="materialize-textarea ghichu"></textarea></div>
+									<div class="w3-cell-row">
+										<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div>
+								</form>
+								<form class="w3-row hidden tamdungForm">
+										<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div>
+										<div class="w3-cell-row">
+											<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div>
+								</form>
+							</div>
+						</div>
+					</li>`;
 					obDulieu.plus.insertAdjacentHTML('afterend',elmItem);
+				}
+				tagAnalysis=(item)=>{
+					var tempTags={};
+					if(item.tinhtrang.search(/thực hiện/gi)>-1) tempTags.stThuchien="Đang thực hiện";
+					if(item.tinhtrang.search(/hoàn thành/gi)>-1) tempTags.stHoanthanh="Hoàn thành";
+					if(item.tinhtrang.search(/tạm dừng/gi)>-1) tempTags.stTamdung="Tạm dừng";
+					if(item.tinhtrang.search(/chờ duyệt/gi)>-1) tempTags.stChoduyet="Chờ duyệt";
+					if(item.tinhtrang.search(/quá hạn/gi)>-1) tempTags.stQuahan="Quá hạn";
+					if(item.giaoviec.thoihan.full==formatDateForId(new Date(),1)) tempTags.stHethan="Hết hạn hôm nay";
+					tempTags.stBatdau="Từ "+item.giaoviec.ngaygiao.short;
+					if(item.giaoviec.thoihan.short.length>0) tempTags.stKetthuc="Đến "+item.giaoviec.thoihan.short;
+					if(item.giaoviec.ngaygiao.full==formatDateForId(new Date(),1)) tempTags.stMoi="Mới";
+					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
 			</script>
 
 		</div>
 	</div>
-
-	<!-- The core Firebase JS SDK is always required and must be listed first -->
-	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
-
-	<!-- TODO: Add SDKs for Firebase products that you want to use
-	     https://firebase.google.com/docs/web/setup#available-libraries -->
-  <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-auth.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
-
-	<script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vn.js"></script>
-	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth.css" />
-
-	<script src="lib/firebaseScript.js"></script>
 
 	<script description="UI standalone">
 		itemStateSelected=(p)=>{
@@ -326,10 +452,42 @@
 		setMainSolieu=()=>{drawChart()};//bug here When sidebarItem selected
 	</script>
 	<script description="dataProcess">
+		dataToMem=()=>{
+			var url=`${appscriptConfig.workUrl}?action=getList&email=${mainData.user.email}&uid=${mainData.user.uid}`;
+		  logE('getList:'+url);
+		  logF(overlayAppear);
+		  callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
+		      logE('getList Ok:');
+		      var values=mapJsonValue(response.header,decompressSheetValues(response.values));
+		      mainData.congviecList=values;
+		      logF(memToUi);logF(overlayDisappear);
+		    },(er)=>alertEr('GasApiError',er));
+		}
 		
-		var modifiedData;
+		memToUi=()=>{updateListDulieu(mainData.congviecList)}
+		// sidebar add user data
+
+		// sidebar add group
+		sidebarAddGroup=()=>alert(this.name);
+		sidebarAddItem=()=>alert(this.name);
+		// sidebar add item
+
+		dataGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
+			var ext=p.index==-1?'':p.index;
+			['idNguoigiao','idPhutrach','idNgayYeucau','idTencongviec','idNoidungchitiet'].forEach((k)=>alert(p.elm.form[k+ext].value));
+			alert(p.index);
+		}
+		dataSubmitTask=(p)=>{alert(p.index);}
+
+		// solieu add data
+
+		// ban do add data
+	</script>
+	<script description="dataPrototype">
+		User=(p)=>{var thisOb=this;['ten','email','acvId','uid','rowIndex','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
+		setMainDataUser=(user)=>{mainData.user=user}
 		var mainData = {
-			user:{id:'ACV0080',rowIndex:'10',ten:'Nguyễn Mạnh Cường',email:'Cuongbk56@gmail.com',chucdanh:'Kỹ sư',donvi:'Đội Thiết bị Thông tin dẫn đường',maquyen:''}, 
+			user:{},
 			congviecList:[{
 				id:{code:'',rowIndex:'',ten:''},
 				noidung:{tomtat:'',daydu:''},
@@ -355,10 +513,53 @@
 				quahan:{idList:[2],phantram:33.3}}},
 			],
 		};
-
-		dataAddTask=(p)=>{alert(p.index);}
-		dataEditTask=(p)=>{alert(p.index);}
-		dataSubmitTask=(p)=>{alert(p.index);}
+		testDulieu=()=>{
+			var items=[{
+				id:{code:'',rowIndex:''},
+				noidung:{tomtat:'Bao tri he thong Trunking',daydu:'+ Kiem tra may tinh ghi am\n+ Kiểm tra tình trạng ghi âm\n+ Kiểm tra hệ thống tổng đài'},
+				tinhtrang: 'Hoàn thành',
+				tags:{stQuahan:'Quá hạn',stHoanthanh:'Hoàn thành',stKetthuc:'Hết hạn hôm nay',stBatdau:'Từ 28/02'},
+				giaoviec:{
+					ngaygiao:{short:'28/02',full:'28/02/2020'},
+					nguoigiao:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+					chutri:{id:'',rowIndex:'',hoten:'Nguyen Thuong Hien',ten:'Hien',email:'',chucdanh:'',donvi:''},							
+					thoihan:{full:'02/05/2020',short:'02/05'},
+				},
+				thuchien:{
+					ngayhoanthanh:{short:'03/03',full:'03/03/2020'},
+					nguoithuchien:{id:'',rowIndex:'',hoten:'Tran Quoc Hoan',ten:'Hoan',email:'',chucdanh:'',donvi:'',img:''},
+					ketqua:'May tinh ghi am:OK\nTinh trang ghi am:OK\nHe thong tong dai:OK',
+					pheduyet:{
+						ngaypheduyet:{short:'03/03',full:'03/03/2020'},
+						nguoipheduyet:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+						noidung:'OK'
+					}
+				},
+			},{
+				id:{code:'',rowIndex:'',ten:''},
+				noidung:{tomtat:'Lap dat he thong canh bao nuoc muong ho',daydu:'+ Mua he thong\n+ Lap dat thu nghiem'},
+				tinhtrang: 'Tạm dừng',
+				tags:{stQuahan:'Quá hạn',stTamdung:'Tạm dừng',stKetthuc:'Hết hạn hôm nay',stBatdau:'Từ 28/02'},
+				giaoviec:{
+					ngaygiao:{short:'28/02',full:'28/02/2020'},
+					nguoigiao:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+					chutri:{id:'',rowIndex:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:''},							
+					thoihan:{full:'02/06/2020',short:'02/06'},
+				},
+				tamdung:{
+					ngayxintamdung:{short:'03/03',full:'03/03/2020'},
+					nguoixintamdung:{id:'',rowIndex:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:'',img:''},
+					lydo:'Do dịch Covid-19, không thể nhập sensor về',
+					pheduyet:{
+						ngaypheduyet:{short:'03/03',full:'03/03/2020'},
+						nguoipheduyet:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+						noidung:'Chập nhật tạm dừng'
+					}
+				},
+			}
+			];
+			addListDulieu(items);
+		}
 	</script>
 	<script description='viewControl'>
 		var obDoc = {d:document,de:document.documentElement};
@@ -374,21 +575,40 @@
 	<!-- Compiled and minified Material -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+  <!-- GasAPI -->
+  <script type="text/javascript">
+		var appscriptConfig = {
+		  signinUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
+		  signinDebug:'https://script.google.com/macros/s/AKfycbyb10Q1iK8cW_DFravhr6djs9I5TWt1CX3rDat3Gr6D/dev',
+		  workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
+		}
+		callGasApi=(url,isJson)=>new Promise(dataCb=>{fetch(url).then(r=>(r.ok)?isJson?r.json():r.blob():alertEr(NetEr,'GasApi')).then(dataCb).catch(er=>alertEr(FetchEr,er));})
+		gasApiCb=data=>new Promise((dataCb,errorCb)=>(data.status==false||data.message.error != undefined)?errorCb(data.message):dataCb(data.message))
+
+		compressSheetValues=arrayInput=>JSON.stringify(arrayInput).replace(/,""/g,'~').replace(/,"/g,'`');
+		decompressSheetValues=stringifyInput=>JSON.parse(stringifyInput.replace(/~/g,',""').replace(/`/g,',"'));
+
+		dateShort=(inputDate)=>inputDate.slice(0,inputDate.lastIndexOf('/'));
+		formatDateForId=(date,delimiter)=>mergeStr(date.getFullYear())((1 + date.getMonth()).toString().padStart(2,'0'))(date.getDate().toString().padStart(2,'0'))(delimiter);
+		const mergeStr=y=>m=>d=>delimiter=>(delimiter == undefined)?(y + m + d):d + '/' + m + '/' + y;
+
+		//function testMapJsonValue(){mapJsonValue(getJsonKey(),openSheet(workSj).getRange(3,1,1,10).getDisplayValues())}
+		mapJsonValue=(header,values)=>values.map((r)=>r.reduce((l,o,oIdx)=>setValueJson(l,header[oIdx].split('.'),o),{}))
+		//function testGetJsonKey(){getJsonKey()} - this is header - for gs only
+		getJsonKey=()=>openSheet(workSj).getRange('2:2').getDisplayValues()[0];
+		//function testSetValueJson(){var o={};setValueJson(o,['t','k','v'],'8');Logger.log(JSON.stringify(o))}
+		setValueJson=(ob,keys,value)=>(keys.reduce((o,k,ki)=>k?(o[k]=(ki==keys.length-1)?((k.search(/ngay|thoihan/g)>-1)?{full:value,short:dateShort(value)}:value):(o[k]?o[k]:{})):o,ob)||true)?ob:'';
+		
+  </script>
   <!-- CustomScript -->
-  <script src="lib/firebaseScript.js"></script>
   <script src="lib/libScript.js"></script>
   <script src="lib/testScript.js"></script>
   
   <script>
   	//Credit to:https://stackoverflow.com/questions/8835413/difference-between-load-vs-domcontentloaded
   	document.addEventListener("DOMContentLoaded", ()=>{
-  		
-			// dumpMemToUi(); 
-		});
-		window.addEventListener('load', function() {
-        initFirebaseApp();
-        logF(initScriptMaterialize);logF(initScriptUI);
-    });
+  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);}});
+  	});
   </script>
 </body>
 </html>
