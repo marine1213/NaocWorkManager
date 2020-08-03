@@ -466,12 +466,17 @@
 	</script>
 	<script description="dataProcess">
 		dataToMem=()=>{
-			var url=`${appscriptConfig.workUrl}?action=getList&email=${mainData.user.email}&uid=${mainData.user.uid}`;
+			var url=`${appscriptConfig.workUrl}?action=getList&email=${mainData.user.email}&uid=${mainData.user.uid}&hash=${mainData.hash}`;
 		  	logE('getList:'+url);logF(overlayAppear);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
 		      logE('getList Ok:');
 		      var values=mapJsonValue(response.header,decompressSheetValues(response.values));
-		      mainData.congviecList=values;
+		      mainData.hash=response.hash;logE('MainHash:'+mainData.hash);
+		      if(response.addOne==true)
+		      	mainData.congviecList.push(values[0]);
+		      else
+		      	mainData.congviecList=values; 
+		      logE('AddOne:'+response.addOne);
 		      logF(memToUi);logF(overlayDisappear);
 		      obSolieu.setStats([22,10,2,2,0,0,1]);
 		    },(er)=>alertEr('GasApiError',er));
@@ -486,6 +491,7 @@
 		// sidebar add item
 
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
+			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
 			var temp = [];
 			['idNguoigiao','idPhutrach','idNgayYeucau','idTencongviec','idNoidungchitiet'].forEach((k,idx)=>temp[idx]=p.elm.form[k+ext].value);
@@ -498,12 +504,13 @@
 		  	logE(action+':'+url);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
 		      switch(response.action) {
-		      	case 'create': alert('Đã thêm công việc mới!');
-		      	case 'edit': alert('Đã sửa công việc xong!');
+		      	case 'create': alert('Đã thêm công việc mới!');break;
+		      	case 'edit': alert('Đã sửa công việc xong!');break;
 		      	default: alert('Không xác định công việc, debug:'+JSON.stringify(response));
 		      }
 		      logF(dataToMem);
-		    },(er)=>alertEr('GasApiError',er));
+		      p.elm.disabled=false;
+		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		taskContentSetUI=(p)=>{
 			var item=mainData.congviecList[p.index];

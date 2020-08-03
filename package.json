@@ -1,0 +1,27 @@
+{
+  "name": "naocworkmanager",
+  "version": "1.0.0",
+  "description": "naoc work manager",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "firebase": "^7.17.1",
+    "firebaseui": "^4.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marine1213/NaocWorkManager.git"
+  },
+  "author": "Nguyen Manh Cuong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marine1213/NaocWorkManager/issues"
+  },
+  "homepage": "https://github.com/marine1213/NaocWorkManager#readme"
+}

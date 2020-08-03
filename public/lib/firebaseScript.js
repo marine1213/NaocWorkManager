@@ -25,7 +25,7 @@ onSignOut=()=>{firebase.auth().signOut().then(()=>{logE('Signed Out');}, (error)
 
 processUserData=(user,callback)=>{
   var url=`${appscriptConfig.signinUrl}?action=signIn&email=${user.email}&uid=${user.uid}`;
-  // logE('signin:'+url);
+  logE('signin:'+url);
   callGasApi(url,true).then(gasApiCb).then(message=>{// merge data + main.user
       var aUser=message.data;logE('signin Ok');
       mainData.user={ten:aUser.hoten,tenkhac:'('+user.displayName+')',email:user.email,acvId:aUser.maAcv,uid:user.uid,rowIndex:aUser.rowIdx,chucdanh:aUser.chucdanh,donvi:aUser.donvi,maquyen:aUser.maquyen,img:user.photoURL};
