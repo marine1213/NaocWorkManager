@@ -14,6 +14,22 @@
 <!-- + Tag Quá hạn: getFormat(thoihan).millis-getFormat(hôm nay)<0 -->
 <!-- Khi tam dung: Hoan thanh mo di, Tam dung-> tiep tuc -->
 <!-- Khi hoan thanh, Hoan thanh mo di, Tam dung-> tiep tuc -->
+
+<!-- thuchien ok pheduyet ok -> hidden
+thuchien ok pheduyet ko ok -> hien nut pheduyet
+thuchien ko ok -> hien nut hoanthanh / tamdung
+
+tamdung ok pheduyet ok -> hidden
+tamdung ok pheduyet ko ok -> hien nut phe duyet (neu co quyen) 
+tamdung ko ok -> hien nut hoanthanh / tamdung
+
+thuchien ok ko? -> ko -> tamdung ok ko? -> hien nut
+thuchien ok ko? -> ok -> pheduyet ok ko? -> pheduyet
+thuchien ok ko? -> ok -> pheduyet ok ko? -> ok -> hidden
+
+tamdung ok ko? ko -> hien nut
+tamdung ok ko? ok -> pheduyet ok ko? ko -> pheduyet
+ -->
 <script type="text/javascript">
 	var elmTags=(Object.keys(item.tags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${item.tags[k]}</a>`;})).join('<a class="pR4px">');
 	var elmExtend=item.thuchien?(
@@ -98,14 +114,48 @@
 				<form class="w3-row hidden hoanthanhForm">
 					<div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div>
 					<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div>
-					<div class="w3-col s11"><label>Ghi chú</label><textarea class="materialize-textarea ghichu"></textarea></div>
 					<div class="w3-cell-row">
 						<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div>
 				</form>
 				<form class="w3-row hidden tamdungForm">
-						<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div>
-						<div class="w3-cell-row">
-							<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div>
+					<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div>
+					<div class="w3-cell-row">
+						<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div>
+				</form>
+			</div>
+			<div class="w3-cell-row">
+				<div class="w3-cell w3-center" ><button class="w3-button w3-gray" onclick="logF(itemStateSelected,{elm:this,state:2});">Không chấp nhận</button></div>
+				<div class="w3-cell w3-center"><button class="w3-button w3-green" onclick="logF(itemStateSelected,{elm:this,state:3});">Phê duyệt</button></div>
+			</div>
+			<div class="hidden">
+				<form class="w3-row hidden hoanthanhForm">
+					<div class="w3-col s8"><label>Người thực hiện</label><input type="text" class="nguoithuchien"></div>
+					<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea ketquathuchien"></textarea><label> <input type="checkbox" class="filled-in" checked="checked" /> <span>Hoàn thành toàn bộ</span> </label></div>
+					<div class="w3-cell-row">
+						<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:0})" type="button">Gửi đi phê duyệt</button></div></div>
+				</form>
+				<form class="w3-row hidden tamdungForm">
+					<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea lydotamdung"></textarea></div>
+					<div class="w3-cell-row">
+						<div class="w3-cell w3-center"><button class="w3-button w3-theme" onclick="logF(dataSubmitTask,{index:0,state:1}" type="button">Gửi đi phê duyệt</button></div></div>
+				</form>
+			</div>
+			<div class="w3-cell-row">
+				<div class="w3-cell w3-center" ><button class="w3-button w3-gray w95" onclick="logF(itemStateSelected,{elm:this,state:2});">Không duyệt</button></div>
+				<div class="w3-cell w3-center"><button class="w3-button w3-green w95" onclick="logF(itemStateSelected,{elm:this,state:3});">Phê Duyệt</button></div>
+			</div>
+			<div class="hidden">
+				<form class="w3-row hidden">
+					<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoikhongphe${index}"></div>
+					<div class="w3-col s11"><label>Vấn đề còn tồn tại</label><textarea class="materialize-textarea" name="idNoidungkophe${index}"></textarea></div>
+					<div class="w3-cell-row">
+					<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:0,source:})" type="button">Xác nhận</button></div></div>
+				</form>
+				<form class="w3-row hidden">
+					<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoipheduyet${index}"></div>
+					<div class="w3-col s11"><label>Nội dung phê duyệt</label><textarea class="materialize-textarea" name="idNoidungphe${index}"></textarea></div>
+					<div class="w3-cell-row">
+					<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:})" type="button">Xác nhận</button></div></div>
 				</form>
 			</div>
 		</div>
