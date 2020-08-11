@@ -9,24 +9,12 @@
   	// obAts=['e','content','tieude','solieu','list'];
   initElm=(ob,obAts,eIDs)=>{obAts.map((k,id)=>{ob[k]=document.getElementById(eIDs[id]);ob[k+'s']=ob[k].style;ob[k+'c']=ob[k].classList});}
 //=================================================
-
 // Google Chart API
 // Credit to: https://developers.google.com/chart/interactive/docs/gallery/piechart
 // Load google charts
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(()=>{chartApiReady=true;console.info('chartApi is ready!');drawChart()});
-var chartApiReady = false;
-var chart=null;
-var chartData=[['Tình trạng', 'Số lượng'],['Đang thực hiện', 0],['Tạm dừng', 0],['Hoàn thành', 0],['Quá hạn', 0],['Chờ duyệt hoàn thành', 0],['Chờ duyệt tạm dừng', 0]];
 
-// Draw the chart and set the chart values
-drawChart=(noLegend,inData)=>{ // bug: xong data thi sua chart voi nolegend
-	if(!chartApiReady){console.warn('chartApi is not ready');return;} if(inData) inData.map((val,idx)=>{if(idx>0)chartData[idx][1]=val});
-
-	var data = google.visualization.arrayToDataTable(chartData);
-	var options = {chartArea:{width:'100%',height:'75%'},height:150,colors:['#109618','#ff9900','#3366cc','#dc3912','#02a99a','#f5c043'],legend:noLegend?'none':{textStyle:{fontSize:10}}};
-	(chart = chart?chart:new google.visualization.PieChart(document.getElementById('piechart'))).draw(data, options);
-}
 //=================================================
 // description="detectmobilebrowser"
 var isOnMobile = false;

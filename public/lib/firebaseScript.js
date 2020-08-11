@@ -35,7 +35,8 @@ processUserData=(user,callback)=>{
         var maAcv = prompt("Hãy nhập mã ACV của bạn vào ô dưới đây:", "ACV");
         var signupUrl=`${appscriptConfig.signinUrl}?action=signUp&email=${user.email}&uid=${user.uid}&maAcv=${maAcv}`;
         // logE(null,er);logE('signup:'+signupUrl);
-        callGasApi(signupUrl,true).then(gasApiCb).then(data=>alert(`Đã đăng ký email ${data.email} thành công!`),er=>alertEr('Error signup',er));
+        callGasApi(signupUrl,true).then(gasApiCb).then(data=>{alert(`Đã đăng ký email ${data.email} thành công!`);window.location.assign('/');},
+          er=>alertEr('Error signup',er));
       }
     )
 }
