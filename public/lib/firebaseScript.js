@@ -27,8 +27,8 @@ processUserData=(user,callback)=>{
   var url=`${appscriptConfig.signinUrl}?action=signIn&email=${user.email}&uid=${user.uid}`;
   logE('signin:'+url);
   callGasApi(url,true).then(gasApiCb).then(message=>{// merge data + main.user
-      var aUser=message.data;logE('signin Ok');
-      mainData.user={ten:aUser.hoten,tenkhac:'('+user.displayName+')',email:user.email,acvId:aUser.maAcv,uid:user.uid,rowIndex:aUser.rowIdx,chucdanh:aUser.chucdanh,donvi:aUser.donvi,maquyen:aUser.maquyen,img:user.photoURL};
+      logE('signin Ok');var aUser=message.data;aUser.tenkhac='('+user.displayName+')';aUser.uid=user.uid;aUser.img=user.photoURL;aUser.email=user.email;
+      mainData.user=aUser;
       document.body.classList.remove('unseen');callback();
 
     },(er)=>{if(er.error!=501) {alertEr('GasApiError',er);  return;}

@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 	<title>Quản lý công việc</title>
@@ -126,10 +126,11 @@
 	</div>
 	<script description="overlaySidebar">
 	var obSidebar = {data:[
-		{n:'Thông dụng',i:['Công việc của tôi','Liên quan tới tôi','Đơn vị của tôi','Công việc trung tâm'],c:['mine','related','mygroup']},
+		{n:'Thông dụng',i:['Công việc của tôi','Công việc đơn vị','Công việc trung tâm'],c:['mine','mygroup','mycentre']},
 		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng'],
 			c:['TBTTDD','CDD','BTSD','MTKB','VPKB']},
-		{n:'Dự án',i:['Cải tạo đường lăn S1','Bảo trì ILS/DME','Bảo trì hệ thống Trunking']}]};
+		{n:'Dự án (Đang phát triển)',i:['Cải tạo đường lăn S1','Bảo trì ILS/DME','Bảo trì hệ thống Trunking'],
+			c:['Đang phát triển','Đang phát triển','Đang phát triển']}]};
 
 	const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idUserSubName',
 									'idSignedInEmail','idDonvi','idUserImg'];
@@ -137,11 +138,11 @@
 	initSideBar=()=>{
 		initElm(obSidebar,objKList,domKList);
 		obSidebar.gr=obSidebar.e.getElementsByClassName('sidebarGroup');sidebarPopulateContent();
-		setUserInf();sidebarItemClick({g:0,i:0});
+		setUserInf();sidebarItemClick({g:0,i:2});
 	};
 
 	const userObjKlist=['userName','userSubName','userSignedInEmail','userDonvi'];
-	const userDataKlist=['ten','tenkhac','email','donvi'];
+	const userDataKlist=['hoten','tenkhac','email','donvi'];
 	setUserInf=()=>{userObjKlist.map((k,ind)=>{obSidebar[k].innerHTML=mainData.user[userDataKlist[ind]]});setUserImg();}
 	setUserImg=()=>{obSidebar.userImg.src=(mainData.user.img==undefined||mainData.user.img=='')?'https://www.w3schools.com/w3css/img_avatar1.png':mainData.user.img};
 
@@ -172,7 +173,7 @@
     	itSelectedCl.split(' ').map((cl)=>{newElmCl.add(cl);selectedElmCl?selectedElmCl.remove(cl):''});
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
     	// set tiêu đề trang
-    	mainPopulateContent(param);
+    	logF(mainPopulateContent,param);
     };
 
     sidebarPopulateContent=()=>{
@@ -288,11 +289,15 @@
 					drawChart(0,dataTbl);
 				}
 				statisticLoading=(cvList)=>{
-					var idx={dangthuchien:1,tamdung:2,hoanthanh:3,quahan:4,choduyetHoanthanh:5,choduyetTamdung:6};
+					var idx={dangthuchien:1,tamdung:2,hoanthanh:3,quahan:4,choduyetHoanthanh:5,choduyetTamdung:6}, countCv=0;
 					var statisticalTbl = cvList.reduce((out,item)=>{
+						if(dataFilter(item,mainData.filter)==false) return out;
+						out[0]++;
+
 						if(item.tinhtrang.search(/thực hiện/gi)>-1) out[idx.dangthuchien]++;
 						var testHoanthanh = item.tinhtrang.search(/hoàn thành/gi)>-1, testTamdung = item.tinhtrang.search(/tạm dừng/gi)>-1;
 						if(testHoanthanh) out[idx.hoanthanh]++; if(testTamdung) out[idx.tamdung]++;
+
 						var testChoDuyet = item.tinhtrang.search(/chờ duyệt/gi)>-1, testTuchoi = item.tinhtrang.search(/Từ chối yêu cầu/gi)>-1;
 						if(testHoanthanh&&testChoDuyet) {out[idx.hoanthanh]--;out[idx.choduyetHoanthanh]++;}
 						if(testTamdung&&testChoDuyet) {out[idx.tamdung]--;out[idx.choduyetTamdung]++;}
@@ -301,7 +306,7 @@
 						var fDue=item.giaoviec.thoihan.full.split('/'), deltaTime=new Date()-new Date(fDue[2],fDue[1]-1,parseInt(fDue[0])+1);
 						if(deltaTime>0) out[idx.quahan]++;
 						return out;
-					},[cvList.length,0,0,0,0,0,0]);
+					},[countCv,0,0,0,0,0,0]);
 					obSolieu.setStats(statisticalTbl);
 				}
 				
@@ -309,7 +314,7 @@
 
 			<div id="idMainDulieu" class="w3-col s12 m9 bot12p w3-row"  style="padding-left: 8px; padding-right: 8px">
 				<ul class="w3-col s12 collapsible" id="idMainList" style="margin: 0px">
-					<li id="idAddDulieuList">
+					<li id="idAddDulieuList" class="hidden">
 						<div class="pLR15px collapsible-header" >
 							<p><div class="mplus"></div><b class="pR4px w3-text-theme"> Thêm Công việc mới </b></p>
 						</div>
@@ -345,9 +350,9 @@
 				var obDulieu={};
 				initDulieuUI=()=>{initElm(obDulieu,['e','list','plus'],['idMainDulieu','idMainList','idAddDulieuList']);}
 
-				updateListDulieu=(items)=>{emptyListDulieu();addListDulieu(items)}
+				updateListDulieu=()=>{emptyListDulieu();addListDulieu(mainData.congviecList)}
 				emptyListDulieu=()=>Array.from(obDulieu.list.getElementsByClassName('classMainListItem')).forEach((item)=>{item.remove()});
-				addListDulieu=(items)=>{items.forEach((item,itemIdx)=>addItemDulieu(item,itemIdx));}
+				addListDulieu=(items)=>{items.forEach((item,itemIdx)=>dataFilter(item,mainData.filter)?addItemDulieu(item,itemIdx):'');}
 				addItemDulieu=(item,index)=>{
 					var elmTags=tagAnalysis(item);
 					var thuchienPheduyetOkCode = item.thuchien.pheduyet.ok, tamdungPheduyetOkCode = item.tamdung.pheduyet.ok;
@@ -374,7 +379,7 @@
 						<p><b>Nội dung: </b> Yêu cầu tạm dừng ${tamdungPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
 						<p>${item.tamdung.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
 					var stateBtns=
-					`<div class="w3-cell-row">
+					`<div class="nhanvienCtrl hidden"><div class="w3-cell-row">
 						<div class="w3-cell w3-center" ><button class="w3-button w3-blue w95" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div>
 						<div class="w3-cell w3-center"><button class="w3-button w3-orange w95" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div>
 					</div>
@@ -391,10 +396,10 @@
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:1})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
-					</div>`;
+					</div></div>`;
 					var source=thuchienOk?'thuchien':'tamdung', btnStateColor=thuchienOk?'w3-blue':'w3-orange', stateTx=thuchienOk?'hoàn thành':'tạm dừng';
 					var pheduyetBtns=
-					`<div class="w3-cell-row">
+					`<div class="pheduyetCtrl hidden"><div class="w3-cell-row">
 						<div class="w3-cell w3-center" ><button class="w3-button w3-gray w95" onclick="logF(itemStateSelected,{elm:this,state:2});">Không duyệt ${stateTx}</button></div>
 						<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} w95" onclick="logF(itemStateSelected,{elm:this,state:3});">Phê Duyệt ${stateTx}</button></div>
 					</div>
@@ -411,9 +416,9 @@
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:'${source}'})" type="button">Xác nhận</button></div></div>
 						</form>
-					</div>`;
+					</div></div>`;
 					var tieptucBtns=
-					`<div class="w3-cell-row">
+					`<div class="w3-cell-row nhanvienCtrl hidden">
 						<div class="w3-cell w3-center"><button class="w3-button w3-theme w97 pheduyet" onclick="logF(dataResumeTask,{elm:this,index:${index},source:'${source}'});">Tiếp tục Công việc</button></div>
 					</div>
 					`;
@@ -454,7 +459,7 @@
 							</div>
 							<div class="w3-row fullw">${elmExtend}</div>
 							<div class="w3-cell-row bot10p">
-								<div class="w3-cell w3-center" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentEditToggle,{elm:this,index:${index}})">Sửa nội dung Giao việc</button></div>
+								<div class="w3-cell w3-center hidden dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentEditToggle,{elm:this,index:${index}})">Sửa nội dung Giao việc</button></div>
 							</div>
 							<form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}">
 								<div class="w3-col s12 m4 w3-container">
@@ -502,6 +507,15 @@
 					if(item.giaoviec.ngaygiao.full==formatDateForId(new Date(),1)) tempTags.stMoi="Mới";
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
+				dataFilter=(item, filter)=>{
+					switch(filter.code){
+						case 'mycentre': return true;
+						case 'mygroup': return item.giaoviec.chutri.madonvi==mainData.user.madonvi;
+						case 'mine': return item.giaoviec.chutri.hoten==mainData.user.hoten;
+						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': return item.giaoviec.chutri.madonvi==filter.code;
+						default: return true;
+					}
+				}
 			</script>
 
 		</div>
@@ -527,10 +541,22 @@
 		mainElmsHideOnSmall=()=>{var scrWidth=obView.vw()-obSidebar.e.offsetWidth; var kList=['contents','solieus'];
 			[300,900].map((w,wInd)=>{obMain[kList[wInd]].display=(scrWidth)<w?'none':'block'})}
 
-		mainPopulateContent=(p)=>{setMainTitle(p);setMainList();setMainSolieu();}
+		mainPopulateContent=(p)=>{setMainTitle(p);setMainList(p);setMainSolieu();}
 		setMainTitle=(p)=>{obMain.tieude.children[0].innerHTML=obSidebar.data[p.g].i[p.i]};
-		setMainList=()=>{};
+		setMainList=(p)=>{
+			mainData.filter.code=obSidebar.data[p.g].c[p.i];
+			if(uiReady) logF(memToUi);
+		};
 		setMainSolieu=()=>{drawChart(NoLegend)};//bug here When sidebarItem selected
+
+		uiSetPermission=()=>{var maquyen=mainData.user.maquyen; uiAuthorizing(bitSelect(maquyen,3),bitSelect(maquyen,2),bitSelect(maquyen,1),bitSelect(maquyen,0));}
+		uiAuthorizing=(addingRight,edittingRight,pheduyetRight,nhanvienRight)=>{
+			obDulieu.plusc[addingRight==1?'remove':'add']("hidden");
+			Array.from(obDulieu.list.getElementsByClassName('dulieuEditCtrl')).forEach(e=>e.classList[edittingRight==1?'remove':'add']('hidden'));
+			Array.from(obDulieu.list.getElementsByClassName('nhanvienCtrl')).forEach(e=>e.classList[nhanvienRight==1?'remove':'add']('hidden'));
+			Array.from(obDulieu.list.getElementsByClassName('pheduyetCtrl')).forEach(e=>e.classList[pheduyetRight==1?'remove':'add']('hidden'));
+		}
+		bitSelect=(input,challenge)=>((input>>challenge)&1);
 	</script>
 	<script description="dataProcess">
 		dataToMem=()=>{
@@ -540,17 +566,14 @@
 		      logE('getList Ok:');
 		      var values=mapJsonValue(response.header,decompressSheetValues(response.values));
 		      mainData.hash=response.hash;logE('MainHash:'+mainData.hash);
-		      if(response.addOne==true)
-		      	mainData.congviecList.push(values[0]);
-		      else
-		      	mainData.congviecList=values; 
+		      (response.addOne==true)?mainData.congviecList.push(values[0]):mainData.congviecList=values; 
 		      logE('AddOne:'+response.addOne);
 		      logF(memToUi);logF(overlayDisappear);
-		      statisticLoading(mainData.congviecList);
 		    },(er)=>alertEr('GasApiError',er));
 		}
 		
-		memToUi=()=>{updateListDulieu(mainData.congviecList)}
+		memToUi=()=>{logF(updateListDulieu);logF(uiSetPermission);statisticLoading(mainData.congviecList);}
+		
 		// sidebar add user data
 
 		// sidebar add group
@@ -654,75 +677,69 @@
 
 	</script>
 	<script description="dataPrototype">
-		User=(p)=>{var thisOb=this;['ten','email','acvId','uid','rowIndex','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
+		User=(p)=>{var thisOb=this;['hoten','email','maAcv','uid','rowIdx','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
 		setMainDataUser=(user)=>{mainData.user=user}
 		var mainData = {
 			user:{},
 			congviecList:[{
-				id:{code:'',rowIndex:'',ten:''},
+				id:{code:'',rowIdx:'',ten:''},
 				noidung:{tomtat:'',daydu:''},
 				tinhtrang: {code:2,tx:'Đang thực hiện'},
 				tags:'Quá hạn,Hết hạn hôm nay,Từ 28/02',
 				giaoviec:{
 					ngaygiao:'',
-					nguoigiao:{id:'',rowIndex:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
-					chutri:{id:'',rowIndex:'',ten:'',email:'',chucdanh:'',donvi:''},
+					nguoigiao:{id:'',rowIdx:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
+					chutri:{id:'',rowIdx:'',ten:'',email:'',chucdanh:'',donvi:''},
 					thoihan:{full:'',short:''},
 				},
 				thuchien:{
-					nguoithuchien:{id:'',rowIndex:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
+					nguoithuchien:{id:'',rowIdx:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
 					ketqua:'',
 					ghichu:'',
 				}
 			}],
-			congviecShown:[
-				{filterKey:'',filterValue:'*showAll*',
-				output:{dagiao:{idList:[-1],phantram:100},
-				hoanthanh:{idList:[0,1,5],phantram:33.3},
-				dangthuchien:{idList:[2,12,103],phantram:33.3},
-				quahan:{idList:[2],phantram:33.3}}},
-			],
+			filter:{},
 		};
 		testDulieu=()=>{
 			var items=[{
-				id:{code:'',rowIndex:''},
+				id:{code:'',rowIdx:''},
 				noidung:{tomtat:'Bao tri he thong Trunking',daydu:'+ Kiem tra may tinh ghi am\n+ Kiểm tra tình trạng ghi âm\n+ Kiểm tra hệ thống tổng đài'},
 				tinhtrang: 'Hoàn thành',
 				tags:{stQuahan:'Quá hạn',stHoanthanh:'Hoàn thành',stKetthuc:'Hết hạn hôm nay',stBatdau:'Từ 28/02'},
 				giaoviec:{
 					ngaygiao:{short:'28/02',full:'28/02/2020'},
-					nguoigiao:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
-					chutri:{id:'',rowIndex:'',hoten:'Nguyen Thuong Hien',ten:'Hien',email:'',chucdanh:'',donvi:''},							
+					nguoigiao:{id:'',rowIdx:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+					chutri:{id:'',rowIdx:'',hoten:'Nguyen Thuong Hien',ten:'Hien',email:'',chucdanh:'',donvi:''},							
 					thoihan:{full:'02/05/2020',short:'02/05'},
 				},
 				thuchien:{
 					ngayhoanthanh:{short:'03/03',full:'03/03/2020'},
-					nguoithuchien:{id:'',rowIndex:'',hoten:'Tran Quoc Hoan',ten:'Hoan',email:'',chucdanh:'',donvi:'',img:''},
+					nguoithuchien:{id:'',rowIdx:'',hoten:'Tran Quoc Hoan',ten:'Hoan',email:'',chucdanh:'',donvi:'',img:''},
 					ketqua:'May tinh ghi am:OK\nTinh trang ghi am:OK\nHe thong tong dai:OK',
 					pheduyet:{
 						ngaypheduyet:{short:'03/03',full:'03/03/2020'},
-						nguoipheduyet:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+						nguoipheduyet:{id:'',rowIdx:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
 						noidung:'OK'
 					}
 				},
 			},{
-				id:{code:'',rowIndex:'',ten:''},
+				id:{code:'',rowIdx:'',ten:''},
 				noidung:{tomtat:'Lap dat he thong canh bao nuoc muong ho',daydu:'+ Mua he thong\n+ Lap dat thu nghiem'},
 				tinhtrang: 'Tạm dừng',
 				tags:{stQuahan:'Quá hạn',stTamdung:'Tạm dừng',stKetthuc:'Hết hạn hôm nay',stBatdau:'Từ 28/02'},
 				giaoviec:{
 					ngaygiao:{short:'28/02',full:'28/02/2020'},
-					nguoigiao:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
-					chutri:{id:'',rowIndex:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:''},							
+					nguoigiao:{id:'',rowIdx:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+					chutri:{id:'',rowIdx:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:''},							
 					thoihan:{full:'02/06/2020',short:'02/06'},
 				},
 				tamdung:{
 					ngayxintamdung:{short:'03/03',full:'03/03/2020'},
-					nguoixintamdung:{id:'',rowIndex:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:'',img:''},
+					nguoixintamdung:{id:'',rowIdx:'',hoten:'Nguyen Manh Cuong',ten:'Cuong',email:'',chucdanh:'',donvi:'',img:''},
 					lydo:'Do dịch Covid-19, không thể nhập sensor về',
 					pheduyet:{
 						ngaypheduyet:{short:'03/03',full:'03/03/2020'},
-						nguoipheduyet:{id:'',rowIndex:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
+						nguoipheduyet:{id:'',rowIdx:'',hoten:'Tran Do Hai',ten:'Hai',email:'',chucdanh:'',donvi:'',img:''},
 						noidung:'Chập nhật tạm dừng'
 					}
 				},
@@ -766,7 +783,7 @@
 		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>2 && ns[0].length>3)?lastWord(name):name}
 		lastWord=(word)=>word.slice(word.lastIndexOf(' '));
 
-		getPeopleJSON=(name)=>({hoten:name,ten:nameShort(name),maACV:'',})
+		getPeopleJSON=(name)=>({hoten:name,ten:nameShort(name),maACV:'',madonvi:mainData.user.madonvi/*TODO: query madonvi user*/})
 		getDateJSON=(dateSlashForm)=>({full:dateSlashForm,short:dateShort(dateSlashForm)})
 
 		//function testMapJsonValue(){mapJsonValue(getJsonKey(),openSheet(workSj).getRange(3,1,1,10).getDisplayValues())}
@@ -785,10 +802,10 @@
   	// description="Materialize Init"
 	initScriptMaterialize=()=>{logF(initFab);M.Collapsible.init(document.querySelectorAll('.collapsible'), {});}
   	initScriptUI=()=>{logF(initMainUI);logF(initOverlay);logF(initSolieu);logF(initSideBar);logF(initDulieuUI);}
-
+  	var uiReady = false;
   	//Credit to:https://stackoverflow.com/questions/8835413/difference-between-load-vs-domcontentloaded
   	document.addEventListener("DOMContentLoaded", ()=>{
-  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);}});
+  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);uiReady=true;}});
   	});
   </script>
 </body>
