@@ -129,8 +129,7 @@
 		{n:'Thông dụng',i:['Công việc của tôi','Công việc đơn vị','Công việc trung tâm'],c:['mine','mygroup','mycentre']},
 		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng'],
 			c:['TBTTDD','CDD','BTSD','MTKB','VPKB']},
-		{n:'Dự án (Đang phát triển)',i:['Cải tạo đường lăn S1','Bảo trì ILS/DME','Bảo trì hệ thống Trunking'],
-			c:['Đang phát triển','Đang phát triển','Đang phát triển']}]};
+		],active:{g:0,i:2}};
 
 	const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idUserSubName',
 									'idSignedInEmail','idDonvi','idUserImg'];
@@ -138,7 +137,7 @@
 	initSideBar=()=>{
 		initElm(obSidebar,objKList,domKList);
 		obSidebar.gr=obSidebar.e.getElementsByClassName('sidebarGroup');sidebarPopulateContent();
-		setUserInf();sidebarItemClick({g:0,i:2});
+		setUserInf();sidebarItemClick(obSidebar.active);
 	};
 
 	const userObjKlist=['userName','userSubName','userSignedInEmail','userDonvi'];
@@ -151,7 +150,7 @@
 
 	const NoLegend=1;
     sidebarOpen=()=>{obMain.es.marginLeft=getSidebarSize();obSidebar.es.display="block";setSidebarcontentHeight();mainElmsHideOnSmall();drawChart(NoLegend);}
-    sidebarClose=()=>{obMain.es.marginLeft = "0%";obSidebar.es.display="none";mainElmsHideOnSmall();drawChart();}
+    sidebarClose=()=>{obMain.es.marginLeft = "0%";obSidebar.es.display="none";mainElmsUnhideOnSmall();drawChart();}
     sidebarToggle=()=>{obSidebar.es.display=="block"?sidebarClose():sidebarOpen();}
     sidebarResize=()=>{obSidebar.es.display=="block"?sidebarOpen():null;}
 
@@ -168,8 +167,8 @@
     const itNormalCl='w3-hover-theme';
     isParamEqual=(p1,p2)=>(p1.g==p2.g&&p1.i==p2.i);
     sidebarItemClick=(param)=>{
-    	var selectedElmCl = (!obSidebar.sel||isParamEqual(obSidebar.sel,param))?null:getSbItem(obSidebar.sel.g,obSidebar.sel.i).classList;
-    	obSidebar.sel = param;sidebarGroupOpen(param);var newElmCl=getSbItem(param.g,param.i).classList;
+    	var selectedElmCl = (!obSidebar.active||isParamEqual(obSidebar.active,param))?null:getSbItem(obSidebar.active.g,obSidebar.active.i).classList;
+    	obSidebar.active = param;sidebarGroupOpen(param);var newElmCl=getSbItem(param.g,param.i).classList;
     	itSelectedCl.split(' ').map((cl)=>{newElmCl.add(cl);selectedElmCl?selectedElmCl.remove(cl):''});
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
     	// set tiêu đề trang
@@ -521,6 +520,7 @@
 						case 'mygroup': return item.giaoviec.chutri.madonvi==mainData.user.madonvi;
 						case 'mine': return item.giaoviec.chutri.hoten==mainData.user.hoten;
 						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': return item.giaoviec.chutri.madonvi==filter.code;
+						case 'Duan': return item.giaoviec.duan==filter.tx;
 						default: return true;
 					}
 				}
@@ -548,14 +548,14 @@
 		initMainUI=()=>{initElm(obMain,['e','content','tieude','solieu'],['idMain','idMainContainer','idMainTieude','idMainSolieu']);}
 		mainElmsHideOnSmall=()=>{var scrWidth=obView.vw()-obSidebar.e.offsetWidth; var kList=['contents','solieus'];
 			[300,900].map((w,wInd)=>{obMain[kList[wInd]].display=(scrWidth)<w?'none':'block'})}
-
+		mainElmsUnhideOnSmall=()=>{var kList=['contents','solieus'];[300,900].map((w,wInd)=>{obMain[kList[wInd]].display='block'})}
 		mainPopulateContent=(p)=>{setMainTitle(p);setMainList(p);setMainSolieu();}
 		setMainTitle=(p)=>{obMain.tieude.children[0].innerHTML=obSidebar.data[p.g].i[p.i]};
 		setMainList=(p)=>{
-			mainData.filter.code=obSidebar.data[p.g].c[p.i];
-			if(uiReady) logF(memToUi);
+			var obSdp=obSidebar.data[p.g],mfc=mainData.filter;[mfc.code,mfc.tx]=[obSdp.c[p.i],obSdp.i[p.i]];
+			if(uiReady) {logF(updateListDulieu);logF(uiSetPermission);}
 		};
-		setMainSolieu=()=>{drawChart(NoLegend)};//bug here When sidebarItem selected
+		setMainSolieu=()=>{if(uiReady){statisticLoading(mainData.congviecList);drawChart(NoLegend)}};//bug here When sidebarItem selected
 
 		uiSetPermission=()=>{var maquyen=mainData.user.maquyen; uiAuthorizing(bitSelect(maquyen,3),bitSelect(maquyen,2),bitSelect(maquyen,1),bitSelect(maquyen,0));}
 		uiAuthorizing=(addingRight,edittingRight,pheduyetRight,nhanvienRight)=>{
@@ -580,13 +580,14 @@
 		    },(er)=>alertEr('GasApiError',er));
 		}
 		
-		memToUi=()=>{logF(updateListDulieu);logF(uiSetPermission);statisticLoading(mainData.congviecList);}
+		memToUi=()=>{logF(sidebarAddGroup,mainData.congviecList);}
 		
 		// sidebar add user data
 
 		// sidebar add group
-		sidebarAddGroup=()=>alert(this.name);
-		sidebarAddItem=()=>alert(this.name);
+		duanGrouping=(items)=>items.reduce((out,item,idx)=>item.giaoviec.duan.length>0?(out[item.giaoviec.duan]=1)?out:out:out,{});
+		adaptingGroup=(items)=>{var out={n:'Dự án',i:Object.keys(duanGrouping(items)),c:[]};out.i.forEach((g)=>{out.c.push('Duan');});return out};
+		sidebarAddGroup=(cvList)=>{obSidebar.data.push(logO(adaptingGroup(cvList)));sidebarPopulateContent();sidebarItemClick(obSidebar.active)};
 		// sidebar add item
 
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
@@ -679,10 +680,6 @@
 		      logF(dataToMem);
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
-		// solieu add data
-
-		// ban do add data
-
 	</script>
 	<script description="dataPrototype">
 		User=(p)=>{var thisOb=this;['hoten','email','maAcv','uid','rowIdx','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
