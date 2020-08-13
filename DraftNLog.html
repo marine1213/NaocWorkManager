@@ -1,0 +1,30 @@
+<script type="text/javascript">
+// from Firebase
+var loggedInUser={ displayName: user.displayName, email: user.email, emailVerified: user.emailVerified, phoneNumber: user.phoneNumber, photoURL: user.photoURL, uid: user.uid, accessToken: user.accessToken, providerData: user.providerData }; 
+
+const userObjKlist=['userName','userSignedInEmail','userDonvi'];
+const userDataKlist=['ten','email','donvi'];
+setUserInf=()=>{userObjKlist.map((k,ind)=>{obSidebar[k].innerHTML=mainData.user[userDataKlist[ind]]});}	
+
+user:{acvId:'ACV0080',rowIndex:'10',ten:'Nguyễn Mạnh Cường',email:'Cuongbk56@gmail.com',chucdanh:'Kỹ sư',donvi:'Đội Thiết bị Thông tin dẫn đường',maquyen:'',uid:''}, 
+
+User=(param)=>{
+			['ten','email','acvId','uid','rowIndex','chucdanh','donvi','maquyen'].forEach((k,ki)=>this[k]=param[ki]);
+		}
+</script>
+<script type="text/javascript" title="appscript">
+	//How To Call External API Using Google App Script
+	var response=UrlFetchApp.fetch(url);
+	var json=response.getContentText();
+	var data=JSON.parse(json);
+	//Build the API in Google Script Editor
+	return ContentService.createTextOuput(e.parameters.callback+'('+JSON.stringify(data)+')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+	//How to connect google spreadsheet to MySQL server with Apps Script:https://www.youtube.com/watch?v=npq2zRrPtP8
+	//freqsqlhosting.net
+</script>
+
+	<!-- firebase database - firestore -->
+	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-firestore.js"></script>	
+<script type="text/javascript">
+ 	var db = firebase.firestore(); testDB=()=>{ db.collection("users").add({ first: "Ada", last: "Lovelace", born: 1815 }) .then(function(docRef) { console.log("Document written with ID: ", docRef.id); }) .catch(function(error) { console.error("Error adding document: ", error); }); // Add a second document with a generated ID. db.collection("users").add({ first: "Alan", middle: "Mathison", last: "Turing", born: 1912 }) .then(function(docRef) { console.log("Document written with ID: ", docRef.id); }) .catch(function(error) { console.error("Error adding document: ", error); }); } // readDB=()=>{ //   // db.collection("users").get().then( //     // (querySnapshot) => {querySnapshot.forEach((doc) => {var obj=JSON.stringify(doc.data());console.log(`${doc.id} => ${1}`);});} //     // ); // }
+</script>
