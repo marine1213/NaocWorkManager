@@ -53,7 +53,7 @@
 		@media screen and (max-width: 350px) {.txLarge{font-size: 12px}.txSmall{font-size: 9px}}
 		@media screen and (max-width: 280px) {.txxLarge{font-size: 14px}}
 
-		input.searchDark:focus{color: #fff;}
+		input.searchDark{color: #fff;}
 
 		.stThuchien{background-color: #109618; color: #fff; opacity: 0.75}
 		.stChoduyetHoanthanh{background-color: #02a99a; color: #fff; opacity: 0.9}
@@ -99,7 +99,7 @@
 	<div class="w3-sidebar w3-bar-block w3-animate-left hidden w3-display-container " id="idSidebar">
 		<div class="w3-xlarge w3-container w3-row" id="idSidebarSearch">
 			<div class="w3-col" style="width:25px"><i class="fa fa-search w3-large"></i></div>
-			<div class="w3-rest"><input type="text" name="text" placeholder="Tìm dự án - phòng ban" class="w3-input w3-border-0 searchDark"></div>
+			<div class="w3-rest"><input type="text" onkeyup="logF(sidebarSearch,{elm:this})" placeholder="Tìm dự án - phòng ban" class="w3-input w3-border-0 searchDark"></div>
 		</div>
 		<div class="overYAuto" id="idSidebarContent" >
 			<div class="w3-bar-item sidebarGroup txBold" style="padding: 5px 8px;color: #656768" onclick="logF(sidebarGroupToggle,{g:0})" >
@@ -135,7 +135,7 @@
 									'idSignedInEmail','idDonvi','idUserImg'];
 	const objKList=['e','search','userEl','c','userName','userSubName','userSignedInEmail','userDonvi','userImg'];
 	initSideBar=()=>{
-		initElm(obSidebar,objKList,domKList);
+		initElm(obSidebar,objKList,domKList);obSidebar.initData=obSidebar.data;
 		obSidebar.gr=obSidebar.e.getElementsByClassName('sidebarGroup');sidebarPopulateContent();
 		setUserInf();sidebarItemClick(obSidebar.active);
 	};
@@ -149,10 +149,10 @@
 	setSidebarcontentHeight=()=>{obSidebar.cs.maxHeight=(obView.vh()-(obSidebar.search.offsetHeight+obSidebar.userEl.offsetHeight))+'px'};
 
 	const NoLegend=1;
-    sidebarOpen=()=>{obMain.es.marginLeft=getSidebarSize();obSidebar.es.display="block";setSidebarcontentHeight();mainElmsHideOnSmall();drawChart(NoLegend);}
-    sidebarClose=()=>{obMain.es.marginLeft = "0%";obSidebar.es.display="none";mainElmsUnhideOnSmall();drawChart();}
-    sidebarToggle=()=>{obSidebar.es.display=="block"?sidebarClose():sidebarOpen();}
-    sidebarResize=()=>{obSidebar.es.display=="block"?sidebarOpen():null;}
+    sidebarOpen=()=>{obMain.es.marginLeft=getSidebarSize();obSidebar.es.display="block";setSidebarcontentHeight();mainElmsHideOnSmall();obSidebar.state=1;drawChart();}
+    sidebarClose=()=>{obMain.es.marginLeft = "0%";obSidebar.es.display="none";mainElmsUnhideOnSmall();obSidebar.state=0;drawChart();}
+    sidebarToggle=()=>{obSidebar.state==1?sidebarClose():sidebarOpen();}
+    sidebarResize=()=>{obSidebar.state==1?sidebarOpen():null;}
 
     getSbArrBtn=(gIndex)=>{return obSidebar.gr[gIndex].children[0].children[0].classList;}
     getSbGroupElm=(gIndex)=>{return obSidebar.gr[gIndex].nextElementSibling}
@@ -166,15 +166,24 @@
     const itSelectedCl='w3-panel w3-leftbar w3-border-theme w3-grey w3-text-white';
     const itNormalCl='w3-hover-theme';
     isParamEqual=(p1,p2)=>(p1.g==p2.g&&p1.i==p2.i);
-    sidebarItemClick=(param)=>{
+
+    setSidebarItemClicked=(param)=>{
     	var selectedElmCl = (!obSidebar.active||isParamEqual(obSidebar.active,param))?null:getSbItem(obSidebar.active.g,obSidebar.active.i).classList;
     	obSidebar.active = param;sidebarGroupOpen(param);var newElmCl=getSbItem(param.g,param.i).classList;
     	itSelectedCl.split(' ').map((cl)=>{newElmCl.add(cl);selectedElmCl?selectedElmCl.remove(cl):''});
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
-    	// set tiêu đề trang
-    	logF(mainPopulateContent,param);
-    };
+    }
 
+    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param)};
+
+    sidebarSearch=(p)=>{
+    	var searchVal=p.elm.value;
+    	if(searchVal.length==0) {logF(restoreSidebarData);sidebarPopulateContent();setSidebarItemClicked(obSidebar.active);}
+    	else{obSidebar.data=obSidebar.origin.map(gr=>{var out={n:gr.n,i:[],c:[]};
+    		gr.i.map((item,idx)=>{if(item.search(searchVal)>-1){out.i.push(item);out.c.push(gr.c[idx])}}); return out;});sidebarPopulateContent();
+    		obSidebar.data.forEach((gr,grIdx)=>{if(gr.i.length>0) sidebarGroupOpen({g:grIdx})});
+    	}
+    }
     sidebarPopulateContent=()=>{
     	var gName='';
     	obSidebar.data.map((group,gIndex)=>{
@@ -234,11 +243,17 @@
 
 			<div id="idMainTieude" class="w3-col s12 w3-container"><h3>Title: Công việc của tôi</h3></div>
 
-			<div id="idMainSolieu" class="w3-right w3-col s12 m3 w3-container bot12p">
-				<div class="w3-card-2 w3-container">
-					<div class="w3-col s6 m12 w3-row bot10p">
+			<div id="idSubSidebar" class="w3-right w3-col s12 m3 w3-container bot12p">
+				<div class="w3-card-2 w3-container " id="idMainSearch">
+					<div class="w3-col s12 w3-row w3-large">
+						<div class="w3-col" style="width:30px;margin-top: 10px"><i class="fa fa-search"></i></div>
+						<div class="w3-rest"><input type="text"  placeholder="Lọc danh sách công việc.." onkeyup="logF(mainSearch,{elm:this})" onfocus="logF(focusMainSearch)" class="w3-input w3-border-0"></div>
+					</div>
+				</div>
+				<div class="w3-card-2 w3-container mT10p" id="idMainSolieu" >
+					<div class="w3-col s6 m12 w3-row bot10p" onclick="logF(mainSolieuToggleOnSmall);">
 						<h4>Tiến độ</h4>
-						<div class="pad10p w3-col s12">
+						<div class="pad10p w3-col s12 hideOnSearchFocus">
 							<div class="w3-cell-row">
 								<div class="w3-cell w3-cell-middle w3-col s6 pad10p txCenter"><b class="txLarge" id="idSolieuNo">--</b><br><b class="txSmall">Công việc</b></div>
 								<div class="w3-cell w3-cell-middle w3-col s6 pad10p txCenter"><b class="txLarge" id="idSolieuPercent">--.-%</b><br><b class="txSmall">Đã hoàn thành</b></div>
@@ -246,9 +261,9 @@
 							<div class="w3-light-grey w3-round-xlarge progressHeight"><div class="w3-container w3-theme w3-round-xlarge progressHeight" style="width:25%;" id="idSolieuBar"></div></div>
 						</div>
 					</div>
-					<div class="w3-col s6 m12 ">
+					<div class="w3-col s6 m12 " onclick="logF(mainSolieuToggleOnSmall);">
 						<h4>Thống kê</h4>
-						<div class="">
+						<div class="jam hideOnSearchFocus">
 							<table class="w3-table w3-bordered " id="idSolieuTable">
 								<tbody>
 									<tr><td class="txSmall"><b>Được giao: <b></td><td><b class="solieuTableData txSmall">--<b></td></tr>
@@ -260,11 +275,11 @@
 									<tr><td class="txSmall">Đang chờ duyệt tạm dừng: </td><td class="solieuTableData txSmall">--</td></tr>
 								</tbody>
 							</table>
-							
-							<div id="piechart" style="width: 100%;"></div>
 						</div>
 					</div>
-					
+					<div class="w3-col s12 hideOnSearchFocus">
+						<div id="piechart" style="width: 100%;"></div>
+					</div>
 				</div>
 			</div>
 			<script description="chartControl">
@@ -273,10 +288,11 @@
 
 				// Draw the chart and set the chart values
 				drawChart=(noLegend,inData)=>{ // bug: xong data thi sua chart voi nolegend
+					if(noLegend==undefined) noLegend=obSidebar.state;
 					if(!chartApiReady){console.warn('chartApi is not ready');return;} if(inData) inData.map((val,idx)=>{if(idx>0)chartData[idx][1]=val});
 
 					var data = google.visualization.arrayToDataTable(chartData);
-					var options = {chartArea:{width:'100%',height:'75%'},height:150,colors:['#109618','#ff9900','#3366cc','#dc3912','#02a99a','#f5c043'],legend:noLegend?'none':{textStyle:{fontSize:10}}};
+					var options = {chartArea:{width:'100%',height:'75%'},height:150,colors:['#109618','#ff9900','#3366cc','#dc3912','#02a99a','#f5c043'],legend:(noLegend==1)?'none':{textStyle:{fontSize:10}}};
 					(chart = chart?chart:new google.visualization.PieChart(document.getElementById('piechart'))).draw(data, options);
 				}
 
@@ -515,14 +531,18 @@
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
 				dataFilter=(item, filter)=>{
-					switch(filter.code){
+					analyzeSidebarSearchTerm=()=>{switch(filter.sidebarSearchTerm){
 						case 'mycentre': return true;
 						case 'mygroup': return item.giaoviec.chutri.madonvi==mainData.user.madonvi;
 						case 'mine': return item.giaoviec.chutri.hoten==mainData.user.hoten;
-						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': return item.giaoviec.chutri.madonvi==filter.code;
-						case 'Duan': return item.giaoviec.duan==filter.tx;
-						default: return true;
+						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': return item.giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
+						case 'Duan': return item.giaoviec.duan==filter.sidebarSearchTx;
+						default: return true;}}
+					analyzeMainSearchTerm=(isolatedItem,lastResult)=>{var t=typeof isolatedItem;
+						return (t=='string')?(lastResult||isolatedItem.search(filter.mainSearchTerm)>-1):(t=='array')? false:
+						Object.keys(isolatedItem).reduce((last,k1)=>analyzeMainSearchTerm(isolatedItem[k1],last),lastResult);
 					}
+					return (analyzeSidebarSearchTerm()&&(filter.mainSearchTerm.length==0?true:analyzeMainSearchTerm(item,false)));
 				}
 			</script>
 
@@ -544,18 +564,28 @@
 		taskContentEditToggle=(p)=>{p.elm=p.elm.parentElement.parentElement.nextElementSibling;p.elm.classList.toggle('hidden',p.force);logF(taskContentSetUI,p);}
 	</script>
 	<script description="mainUI">
-		var obMain={};
-		initMainUI=()=>{initElm(obMain,['e','content','tieude','solieu'],['idMain','idMainContainer','idMainTieude','idMainSolieu']);}
-		mainElmsHideOnSmall=()=>{var scrWidth=obView.vw()-obSidebar.e.offsetWidth; var kList=['contents','solieus'];
+		var obMain={lastSolieuState:false}, obMainKeyList=['e','content','tieude','subSidebar','searchBar','solieu'];
+		var obMainIdList=['idMain','idMainContainer','idMainTieude','idSubSidebar','idMainSearch','idMainSolieu'];
+		initMainUI=()=>{initElm(obMain,obMainKeyList,obMainIdList);obMain.hideList=Array.from(obMain.solieu.getElementsByClassName('hideOnSearchFocus'))}
+
+		mainElmsHideOnSmall=()=>{var scrWidth=obView.vw()-obSidebar.e.offsetWidth; var kList=['contents','subSidebars'];
 			[300,900].map((w,wInd)=>{obMain[kList[wInd]].display=(scrWidth)<w?'none':'block'})}
-		mainElmsUnhideOnSmall=()=>{var kList=['contents','solieus'];[300,900].map((w,wInd)=>{obMain[kList[wInd]].display='block'})}
+		mainElmsUnhideOnSmall=()=>{['contents','subSidebars'].map((elm)=>{obMain[elm].display='block'})}
+
+		isSolieuHideOnSmall=()=>obView.vw()-obMain.solieu.offsetWidth<100;
+		mainSolieuHideOnSmall=()=>{if(isSolieuHideOnSmall()){obMain.hideList.forEach(elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=true))}}
+		mainSolieuUnhideOnSmall=()=>{obMain.hideList.forEach(elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=false))}
+		mainSolieuToggleOnSmall=()=>
+		{if(isSolieuHideOnSmall()) 
+			{obMain.hideList.map(elm=>elm.classList.toggle('hidden',!(obMain.lastSolieuState)));obMain.lastSolieuState=(!obMain.lastSolieuState);}}
+
 		mainPopulateContent=(p)=>{setMainTitle(p);setMainList(p);setMainSolieu();}
 		setMainTitle=(p)=>{obMain.tieude.children[0].innerHTML=obSidebar.data[p.g].i[p.i]};
 		setMainList=(p)=>{
-			var obSdp=obSidebar.data[p.g],mfc=mainData.filter;[mfc.code,mfc.tx]=[obSdp.c[p.i],obSdp.i[p.i]];
+			var obSdp=obSidebar.data[p.g],mfc=mainData.filter;[mfc.sidebarSearchTerm,mfc.sidebarSearchTx]=[obSdp.c[p.i],obSdp.i[p.i]];
 			if(uiReady) {logF(updateListDulieu);logF(uiSetPermission);}
 		};
-		setMainSolieu=()=>{if(uiReady){statisticLoading(mainData.congviecList);drawChart(NoLegend)}};//bug here When sidebarItem selected
+		setMainSolieu=()=>{if(uiReady){statisticLoading(mainData.congviecList);drawChart()}};//bug here When sidebarItem selected
 
 		uiSetPermission=()=>{var maquyen=mainData.user.maquyen; uiAuthorizing(bitSelect(maquyen,3),bitSelect(maquyen,2),bitSelect(maquyen,1),bitSelect(maquyen,0));}
 		uiAuthorizing=(addingRight,edittingRight,pheduyetRight,nhanvienRight)=>{
@@ -565,10 +595,13 @@
 			Array.from(obDulieu.list.getElementsByClassName('pheduyetCtrl')).forEach(e=>e.classList[pheduyetRight==1?'remove':'add']('hidden'));
 		}
 		bitSelect=(input,challenge)=>((input>>challenge)&1);
+		mainSearch=(p)=>{mainData.filter.mainSearchTerm=p.elm.value;sidebarItemClick(obSidebar.active);}
+		focusMainSearch=()=>mainSolieuHideOnSmall();
+		
 	</script>
 	<script description="dataProcess">
 		dataToMem=()=>{
-				var url=`${appscriptConfig.workUrl}?action=getList&email=${mainData.user.email}&uid=${mainData.user.uid}&hash=${mainData.hash}`;
+			var url=`${appscriptConfig.workUrl}?action=getList&email=${mainData.user.email}&uid=${mainData.user.uid}&hash=${mainData.hash}`;
 		  	logE('getList:'+url);logF(overlayAppear);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
 		      logE('getList Ok:');
@@ -582,12 +615,16 @@
 		
 		memToUi=()=>{logF(sidebarAddGroup,mainData.congviecList);}
 		
-		// sidebar add user data
-
+		backupSidebarData=()=>{obSidebar.origin=JSON.parse(JSON.stringify(obSidebar.data))}
+		restoreSidebarData=()=>{obSidebar.data=JSON.parse(JSON.stringify(obSidebar.origin))}
+		getInitSidebarData=()=>JSON.parse(JSON.stringify(obSidebar.initData));
 		// sidebar add group
 		duanGrouping=(items)=>items.reduce((out,item,idx)=>item.giaoviec.duan.length>0?(out[item.giaoviec.duan]=1)?out:out:out,{});
 		adaptingGroup=(items)=>{var out={n:'Dự án',i:Object.keys(duanGrouping(items)),c:[]};out.i.forEach((g)=>{out.c.push('Duan');});return out};
-		sidebarAddGroup=(cvList)=>{obSidebar.data.push(logO(adaptingGroup(cvList)));sidebarPopulateContent();sidebarItemClick(obSidebar.active)};
+		sidebarAddGroup=(cvList)=>{obSidebar.data=getInitSidebarData();
+			obSidebar.data.push(logO(adaptingGroup(cvList)));
+			logF(backupSidebarData);sidebarPopulateContent();sidebarItemClick(obSidebar.active)};
+
 		// sidebar add item
 
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
@@ -703,7 +740,7 @@
 					ghichu:'',
 				}
 			}],
-			filter:{},
+			filter:{sidebarSearchTerm:'',mainSearchTerm:''},
 		};
 		testDulieu=()=>{
 			var items=[{
@@ -758,7 +795,7 @@
 		var obView={vw:()=>Math.max(obDoc.de.clientWidth,window.innerWidth||0),vh:()=>Math.max(obDoc.de.clientHeight, window.innerHeight||0)}
 
 		goToTop=()=>{document.body.scrollTop=0;/* For Safari*/document.documentElement.scrollTop=0;/*For Chrome, Firefox, IE and Opera*/};
-		onScreenResize=()=>{sidebarResize(); drawChart();}
+		onScreenResize=()=>{sidebarResize(); mainSolieuUnhideOnSmall(); drawChart();}
 	</script>
 
   <!-- Google Chart API -->
