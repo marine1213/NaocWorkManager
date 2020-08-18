@@ -626,17 +626,14 @@
 			logF(backupSidebarData);sidebarPopulateContent();sidebarItemClick(obSidebar.active)};
 
 		// sidebar add item
-
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
 			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
 			var temp = [];
 			['idNguoigiao','idPhutrach','idNgayYeucau','idDuan','idTencongviec','idNoidungchitiet'].forEach((k,idx)=>temp[idx]=p.elm.form[k+ext].value);
-			var ngaygiao=formatDateForId(new Date(),1), thoihan=formatFormDate(temp[2].split('-'),1);
-			logE(thoihan+' - '+temp[2]);
+			var ngaygiao=formatDateForId(new Date(),1), thoihan=(temp[2].length>0)?formatFormDate(temp[2].split('-'),1):undefined;
 			var queryData={timestamp:ngaygiao,id:{},giaoviec:{ngaygiao:getDateJSON(ngaygiao),nguoigiao:getPeopleJSON(temp[0]),chutri:getPeopleJSON(temp[1]),thoihan:getDateJSON(thoihan)},duan:temp[3],tinhtrang:"Đang thực hiện",noidung:{tomtat:temp[4],daydu:temp[5]}};
 			
-			logE(queryData);
 			var url=`${appscriptConfig.workUrl}?action=${action}&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE(action+':'+url);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
@@ -817,7 +814,7 @@
 		compressSheetValues=arrayInput=>JSON.stringify(arrayInput).replace(/,""/g,'~').replace(/,"/g,'`');
 		decompressSheetValues=stringifyInput=>JSON.parse(stringifyInput.replace(/~/g,',""').replace(/`/g,',"'));
 
-		dateShort=(inputDate)=>inputDate.slice(0,inputDate.lastIndexOf('/'));
+		dateShort=(inputDate)=>inputDate?inputDate.slice(0,inputDate.lastIndexOf('/')):'';
 		formatDateForId=(date,delimiter)=>date?mergeStr(date.getFullYear())((1 + date.getMonth()).toString().padStart(2,'0'))(date.getDate().toString().padStart(2,'0'))(delimiter):undefined;
 		formatFormDate=(formDateSplitted,delimiter)=>mergeStr(formDateSplitted[0])(formDateSplitted[1])(formDateSplitted[2])(delimiter);
 		const mergeStr=y=>m=>d=>delimiter=>(delimiter == undefined)?(y + m + d):(typeof delimiter=='string')?d+delimiter+m+delimiter+y:d + '/' + m + '/' + y;
@@ -826,7 +823,7 @@
 		lastWord=(word)=>word.slice(word.lastIndexOf(' '));
 
 		getPeopleJSON=(name)=>({hoten:name,ten:nameShort(name),maACV:'',madonvi:mainData.user.madonvi/*TODO: query madonvi user*/})
-		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:undefined
+		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:{full:'',short:''}
 
 		//function testMapJsonValue(){mapJsonValue(getJsonKey(),openSheet(workSj).getRange(3,1,1,10).getDisplayValues())}
 		mapJsonValue=(header,values)=>values.map((r)=>r.reduce((l,o,oIdx)=>setValueJson(l,header[oIdx].split('.'),o),{}))
