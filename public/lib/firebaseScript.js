@@ -24,7 +24,7 @@ initFirebaseApp = (p)=>{
 onSignOut=()=>{firebase.auth().signOut().then(()=>{logE('Signed Out');}, (error)=>{logE('Sign Out Error', error);});}
 
 processUserData=(user,callback)=>{
-  var url=`${appscriptConfig.signinUrl}?action=signIn&email=${user.email}&uid=${user.uid}`;
+  var url=`${appscriptConfig.userUrl}?action=signIn&email=${user.email}&uid=${user.uid}`;
   logE('signin:'+url);
   callGasApi(url,true).then(gasApiCb).then(message=>{// merge data + main.user
       logE('signin Ok');var aUser=message.data;aUser.tenkhac='('+user.displayName+')';aUser.uid=user.uid;aUser.img=user.photoURL;aUser.email=user.email;
@@ -33,7 +33,7 @@ processUserData=(user,callback)=>{
 
     },(er)=>{if(er.error!=501) {alertEr('GasApiError',er);  return;}
         var maAcv = prompt("Hãy nhập mã ACV của bạn vào ô dưới đây:", "ACV");
-        var signupUrl=`${appscriptConfig.signinUrl}?action=signUp&email=${user.email}&uid=${user.uid}&maAcv=${maAcv}`;
+        var signupUrl=`${appscriptConfig.userUrl}?action=signUp&email=${user.email}&uid=${user.uid}&maAcv=${maAcv}`;
         // logE(null,er);logE('signup:'+signupUrl);
         callGasApi(signupUrl,true).then(gasApiCb).then(data=>{alert(`Đã đăng ký email ${data.email} thành công!`);window.location.assign('/');},
           er=>alertEr('Error signup',er));

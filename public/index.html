@@ -9,7 +9,7 @@
 	<!-- The core Firebase JS SDK is always required and must be listed first -->
 	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
 
-	<!-- TODO: Add SDKs for Firebase products that you want to use
+	<!-- Add SDKs for Firebase products that you want to use
 	     https://firebase.google.com/docs/web/setup#available-libraries -->
   <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-auth.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
@@ -177,10 +177,10 @@
     sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param)};
 
     sidebarSearch=(p)=>{
-    	var searchVal=p.elm.value;
+    	var searchVal=p.elm.value.toUpperCase();
     	if(searchVal.length==0) {logF(restoreSidebarData);sidebarPopulateContent();setSidebarItemClicked(obSidebar.active);}
     	else{obSidebar.data=obSidebar.origin.map(gr=>{var out={n:gr.n,i:[],c:[]};
-    		gr.i.map((item,idx)=>{if(item.search(searchVal)>-1){out.i.push(item);out.c.push(gr.c[idx])}}); return out;});sidebarPopulateContent();
+    		gr.i.map((item,idx)=>{if(item.toUpperCase().search(searchVal)>-1){out.i.push(item);out.c.push(gr.c[idx])}}); return out;});sidebarPopulateContent();
     		obSidebar.data.forEach((gr,grIdx)=>{if(gr.i.length>0) sidebarGroupOpen({g:grIdx})});
     	}
     }
@@ -334,18 +334,18 @@
 							<p><div class="mplus"></div><b class="pR4px w3-text-theme"> Thêm Công việc mới </b></p>
 						</div>
 						<div class="pLR15px collapsible-body m0px">
-							<form class="w3-row" name="idGiaoviecForm" id="idGiaoviecForm">
+							<form autocomplete="off" class="w3-row" name="idGiaoviecForm" id="idGiaoviecForm">
 								<div class="w3-col s12 m4 w3-container">
-									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao">
+									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNguoigiao">
 								</div>
 								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach">
+									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classPhutrach">
 								</div>
 								<div class="w3-col s8 m4 w3-container">
 									<label for="idNgayYeucau">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau">
 								</div>
 								<div class="w3-col s12 w3-container">
-									<label for="idDuan">Thuộc dự án</label><input type="text" name="idDuan">
+									<label for="idDuan">Thuộc dự án</label><input type="text" name="idDuan" class="classDuan">
 								</div>
 								<div class="w3-col s12 w3-container">
 									<label for="idTencongviec">Tên công việc</label><input type="text" name="idTencongviec">
@@ -483,16 +483,16 @@
 							</div>
 							<form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}">
 								<div class="w3-col s12 m4 w3-container">
-									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}">
+									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}" class="classNguoigiao">
 								</div>
 								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}">
+									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classPhutrach">
 								</div>
 								<div class="w3-col s8 m4 w3-container">
 									<label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}">
 								</div>
 								<div class="w3-col s12 w3-container">
-									<label for="idDuan${index}">Thuộc dự án</label><input type="text" name="idDuan${index}">
+									<label for="idDuan${index}">Thuộc dự án</label><input type="text" name="idDuan${index}" class="classDuan">
 								</div>
 								<div class="w3-col s12 w3-container">
 									<label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}">
@@ -573,11 +573,11 @@
 		mainElmsUnhideOnSmall=()=>{['contents','subSidebars'].map((elm)=>{obMain[elm].display='block'})}
 
 		isSolieuHideOnSmall=()=>obView.vw()-obMain.solieu.offsetWidth<100;
-		mainSolieuHideOnSmall=()=>{if(isSolieuHideOnSmall()){obMain.hideList.forEach(elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=true))}}
-		mainSolieuUnhideOnSmall=()=>{obMain.hideList.forEach(elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=false))}
+		mainSolieuHideOnSmall=()=>{if(isSolieuHideOnSmall()){tryLoop(obMain.hideList,elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=true))}}
+		mainSolieuUnhideOnSmall=()=>tryLoop(obMain.hideList,elm=>elm.classList.toggle('hidden',obMain.lastSolieuState=false))
 		mainSolieuToggleOnSmall=()=>
 		{if(isSolieuHideOnSmall()) 
-			{obMain.hideList.map(elm=>elm.classList.toggle('hidden',!(obMain.lastSolieuState)));obMain.lastSolieuState=(!obMain.lastSolieuState);}}
+			{tryLoop(obMain.hideList,elm=>elm.classList.toggle('hidden',!(obMain.lastSolieuState)));obMain.lastSolieuState=(!obMain.lastSolieuState);}}
 
 		mainPopulateContent=(p)=>{setMainTitle(p);setMainList(p);setMainSolieu();}
 		setMainTitle=(p)=>{obMain.tieude.children[0].innerHTML=obSidebar.data[p.g].i[p.i]};
@@ -590,9 +590,9 @@
 		uiSetPermission=()=>{var maquyen=mainData.user.maquyen; uiAuthorizing(bitSelect(maquyen,3),bitSelect(maquyen,2),bitSelect(maquyen,1),bitSelect(maquyen,0));}
 		uiAuthorizing=(addingRight,edittingRight,pheduyetRight,nhanvienRight)=>{
 			obDulieu.plusc[addingRight==1?'remove':'add']("hidden");
-			Array.from(obDulieu.list.getElementsByClassName('dulieuEditCtrl')).forEach(e=>e.classList[edittingRight==1?'remove':'add']('hidden'));
-			Array.from(obDulieu.list.getElementsByClassName('nhanvienCtrl')).forEach(e=>e.classList[nhanvienRight==1?'remove':'add']('hidden'));
-			Array.from(obDulieu.list.getElementsByClassName('pheduyetCtrl')).forEach(e=>e.classList[pheduyetRight==1?'remove':'add']('hidden'));
+			elmLoop(obDulieu.list,'dulieuEditCtrl',e=>e.classList[edittingRight==1?'remove':'add']('hidden'));
+			elmLoop(obDulieu.list,'nhanvienCtrl',e=>e.classList[nhanvienRight==1?'remove':'add']('hidden'));
+			elmLoop(obDulieu.list,'pheduyetCtrl',e=>e.classList[pheduyetRight==1?'remove':'add']('hidden'));
 		}
 		bitSelect=(input,challenge)=>((input>>challenge)&1);
 		mainSearch=(p)=>{mainData.filter.mainSearchTerm=p.elm.value;sidebarItemClick(obSidebar.active);}
@@ -610,10 +610,21 @@
 		      (response.addOne==true)?mainData.congviecList.push(values[0]):mainData.congviecList=values; 
 		      logE('AddOne:'+response.addOne);
 		      logF(memToUi);logF(overlayDisappear);
-		    },(er)=>alertEr('GasApiError',er));
+		    },(er)=>alertEr('GasApiError+work',er));
 		}
 		
-		memToUi=()=>{logF(sidebarAddGroup,mainData.congviecList);}
+		memToUi=()=>{logE('sidebarAddGroup()');sidebarAddGroup(mainData.congviecList);logF(initAutoDuan);}
+
+		loadStaffList=()=>{
+			var url=`${appscriptConfig.userUrl}?action=getList`;
+			logE('getList+user:'+url);
+			callGasApi(url,true).then(gasApiCb).then(response=>{
+				logE('getList User Ok:')
+				mainData.staffList=mapJsonValue(response.header,decompressSheetValues(response.values));
+				mainData.staffAutoList=mainData.staffList.map(item=>item.hoten);
+				initAutoStaffList();
+			},er=>alertEr('GasApiError',er));
+		}
 		
 		backupSidebarData=()=>{obSidebar.origin=JSON.parse(JSON.stringify(obSidebar.data))}
 		restoreSidebarData=()=>{obSidebar.data=JSON.parse(JSON.stringify(obSidebar.origin))}
@@ -651,8 +662,8 @@
 			var item=mainData.congviecList[p.index];
 			const giaoviecSubkey=['hoten','hoten','full'], noidungKey=['tomtat','daydu'];
 			var gv=['nguoigiao','chutri','thoihan'].map((k,idx)=>{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=2?v:formatFormDate(v.split('/'),'-')});
-			['idNguoigiao','idPhutrach','idNgayYeucau'].forEach((k,idx)=>{p.elm[k+p.index].value=gv[idx]});
-			['idTencongviec','idNoidungchitiet'].forEach((k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
+			tryLoop(['idNguoigiao','idPhutrach','idNgayYeucau'],(k,idx)=>{p.elm[k+p.index].value=gv[idx]});
+			tryLoop(['idTencongviec','idNoidungchitiet'],(k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
 		}
 		dataSubmitTask=(p)=>{
 			var temp = [],ext = p.index, keySelect=p.state==0?['idNguoithuchien','idKetquathuchien']:['idNguoitamdung','idLydotamdung'];
@@ -679,7 +690,7 @@
 			var temp = [],ext = p.index, keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
 			keySelect.forEach((k,idx)=>{temp[idx]=p.elm.form[k+ext].value});
 			
-			Array.from(document.getElementsByClassName('pheduyet')).forEach((submitBtn)=>{submitBtn.disabled=true});
+			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
 			var pheduyetData={ok:(2-p.state),ngaypheduyet:getDateJSON(formatDateForId(new Date(),1)),nguoipheduyet:getPeopleJSON(temp[0]),noidung:temp[1]};
 			var tinhtrang=(pheduyetData.ok==2?'Từ chối yêu cầu,':'')+(p.source=='thuchien'?'Hoàn thành':'Tạm dừng');
 			var queryData={}; queryData[p.source]={pheduyet:pheduyetData}; queryData.tinhtrang=tinhtrang;
@@ -703,7 +714,7 @@
 			var queryData=(p.source=='thuchien')?thuchienData():tamdungData();queryData[p.source].pheduyet=pheduyetData;
 			var pos = p.index+3;
 
-			Array.from(document.getElementsByClassName('pheduyet')).forEach((submitBtn)=>{submitBtn.disabled=true});
+			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
 			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE('Resume:'+url);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
@@ -804,8 +815,7 @@
   <!-- GasAPI -->
   <script type="text/javascript">
 		var appscriptConfig = {
-		  signinUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
-		  signinDebug:'https://script.google.com/macros/s/AKfycbyb10Q1iK8cW_DFravhr6djs9I5TWt1CX3rDat3Gr6D/dev',
+		  userUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
 		  workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
 		}
 		callGasApi=(url,isJson)=>new Promise(dataCb=>{fetch(url).then(r=>(r.ok)?isJson?r.json():r.blob():alertEr(NetEr,'GasApi')).then(dataCb).catch(er=>alertEr(FetchEr,er));})
@@ -837,14 +847,21 @@
   <script src="lib/libScript.js"></script>
   <script src="lib/testScript.js"></script>
   
+  <script src="lib/autocomplete-js.js"></script>
+  <link rel="stylesheet" type="text/css" href="lib/autocomplete-css.css">
+  <script description="autocomplete">
+  	initAutoStaffList=()=>{tryLoop(['classNguoigiao','classPhutrach'],(classForAuto)=>elmLoop(document,classForAuto,e=>autocomplete(e,mainData.staffAutoList)));}
+  	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
+  </script>
   <script>
   	// description="Materialize Init"
 	initScriptMaterialize=()=>{logF(initFab);M.Collapsible.init(document.querySelectorAll('.collapsible'), {});}
   	initScriptUI=()=>{logF(initMainUI);logF(initOverlay);logF(initSolieu);logF(initSideBar);logF(initDulieuUI);}
+  	
   	var uiReady = false;
   	//Credit to:https://stackoverflow.com/questions/8835413/difference-between-load-vs-domcontentloaded
   	document.addEventListener("DOMContentLoaded", ()=>{
-  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);uiReady=true;}});
+  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);uiReady=true;logF(loadStaffList)}});
   	});
   </script>
 </body>
