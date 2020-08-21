@@ -595,7 +595,9 @@
 			elmLoop(obDulieu.list,'pheduyetCtrl',e=>e.classList[pheduyetRight==1?'remove':'add']('hidden'));
 		}
 		bitSelect=(input,challenge)=>((input>>challenge)&1);
-		mainSearch=(p)=>{mainData.filter.mainSearchTerm=p.elm.value;sidebarItemClick(obSidebar.active);}
+		var lockMainSearch=false;
+		mainSearch=(p)=>{ lockMainSearch=true;if((mainData.filter.mainSearchTerm=p.elm.value).length<10)
+				setTimeout(()=>{sidebarItemClick(obSidebar.active);lockMainSearch=false},2500);else{sidebarItemClick(obSidebar.active);lockMainSearch=false;}}
 		focusMainSearch=()=>mainSolieuHideOnSmall();
 		
 	</script>
