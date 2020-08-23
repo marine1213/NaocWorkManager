@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Sample FirebaseUI App</title>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-analytics.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth__vi.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.5.1/firebase-ui-auth.css" />
+
+    <script src="lib/logScript.js"></script>
+    <script src="lib/firebaseScript.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="lib/w3.css">
+    <link rel="stylesheet" type="text/css" href="lib/w3-theme-green.css">
+    <link rel="stylesheet" type="text/css" href="lib/custom.css">
+
+    <style type="text/css">
+      p{margin: 2px 0px}
+      html,body{height: 100%}
+      body {
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #24292e;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="w3-cell-row" style="padding-top: 100px;">
+      <div class="w3-cell w3-cell-middle txCenter">
+        <img src="https://drive.google.com/thumbnail?authuser=0&sz=w220&id=1Kp-lzjtjl1j2q0TD7HCbu3ms3TBIxzv1" style="padding-bottom: 20px">
+        <h4>Đăng xuất</h4>
+        <h4>Ứng dụng quản lý công việc Khu bay</h4>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", ()=>{
+        logF(deinitFirebaseApp);
+      });
+    </script>
+  </body>
+</html>

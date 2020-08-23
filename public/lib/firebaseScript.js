@@ -21,7 +21,13 @@ initFirebaseApp = (p)=>{
                     /*Signed out.*/window.location.assign('signin.html');}, 
     (error)=>{logE(null,error);});
 };
-onSignOut=()=>{firebase.auth().signOut().then(()=>{logE('Signed Out');}, (error)=>{logE('Sign Out Error', error);});}
+deinitFirebaseApp = (p)=>{
+  firebase.auth().onAuthStateChanged(
+    (user)=>{(user)?/*Signed in.*/onSignOut()://user.getIdToken().then((accessToken)=>{__})
+                    /*Signed out.*/window.location.assign('signin.html');}, 
+    (error)=>{logE(null,error);});
+}
+onSignOut=()=>{firebase.auth().signOut().then(()=>{logE('Signed Out');window.location.assign('signin.html');}, (error)=>{logE('Sign Out Error', error);});}
 
 processUserData=(user,callback)=>{
   var url=`${appscriptConfig.userUrl}?action=signIn&email=${user.email}&uid=${user.uid}`;
