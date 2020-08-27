@@ -311,7 +311,7 @@
 				var obSolieu={};
 				initSolieu=()=>{initElm(obSolieu,['no','percent','bar','table'],['idSolieuNo','idSolieuPercent','idSolieuBar','idSolieuTable']);}
 				obSolieu.setStats=function(dataTbl){
-					var pcent=((dataTbl[0]!=0)?(dataTbl[3]/dataTbl[0]*100).toFixed(1):0)+'%';
+					var pcent=((dataTbl[0]!=0)?(dataTbl[3]/dataTbl[0]*100).toFixed(1):'0.0')+'%';
 					this.no.innerHTML=dataTbl[3];this.percent.innerHTML=pcent;this.bars.width=pcent;
 					Array.from(this.table.getElementsByClassName('solieuTableData')).map((el,elIdx)=>{el.innerHTML=dataTbl[elIdx]});
 					drawChart(0,dataTbl);
@@ -352,7 +352,7 @@
 									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNguoigiao classFastMode">
 								</div>
 								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classNguoiphutrach">
+									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classPhutrach">
 								</div>
 								<div class="w3-col s12 m6 l3 w3-container">
 									<label for="idDonvinhan">Đơn vị thực hiện</label><input type="text" name="idDonvinhan" class="classDonvinhan">
@@ -509,7 +509,7 @@
 									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}" class="classNguoigiao">
 								</div>
 								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classNguoiphutrach">
+									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classPhutrach">
 								</div>
 								<div class="w3-col s12 m6 l3 w3-container">
 									<label for="idDonvinhan${index}">Đơn vị thực hiện</label><input type="text" name="idDonvinhan${index}" class="classDonvinhan">
@@ -561,13 +561,13 @@
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
 				dataFilter=(item, filter)=>{
+					var giaoviec = item.giaoviec;
 					analyzeSidebarSearchTerm=()=>{switch(filter.sidebarSearchTerm){
 						case 'NAOC': return true;
-						case 'mygroup': return item.giaoviec.chutri.madonvi==mainData.user.madonvi;
-						case 'mine': return item.giaoviec.chutri.hoten==mainData.user.hoten;
-						case 'related': return item.giaoviec.phoihop.hoten==mainData.user.hoten;
-						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':return item.giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
-						case 'Duan': return item.giaoviec.duan==filter.sidebarSearchTx;
+						case 'mygroup': return giaoviec.chutri.madonvi==mainData.user.madonvi;
+						case 'mine': return giaoviec.chutri.hoten==mainData.user.hoten || giaoviec.nguoinhan.hoten==mainData.user.hoten;
+						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':return giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
+						case 'Duan': return giaoviec.duan==filter.sidebarSearchTx;
 						default: return true;}}
 					analyzeMainSearchTerm=(isolatedItem,lastResult)=>{var t=typeof isolatedItem;
 						return (t=='string')?(lastResult||isolatedItem.search(filter.mainSearchTerm)>-1):(t=='array')? false:
@@ -679,19 +679,23 @@
 		}
 
 		staffGrouping=(items)=>{
-			var out={};
-			items.forEach(item=>{
-				var madonvi=item.madonvi, machucvu=item.machucvu, isBGDKB = madonvi=='BGDKB';out[madonvi]=out[madonvi]?out[madonvi]:{};
-				var shiftCode=(isBGDKB)?3:1, key=(isBGDKB)?'NAOC':madonvi, list=out[madonvi], canboCode=machucvu>>shiftCode;
+			var names={}, idxs={};
+			items.forEach((item,idx)=>{
+				var madonvi=item.madonvi, machucvu=item.machucvu, isBGDKB = madonvi=='BGDKB';
+				if(!names[madonvi]) {names[madonvi]={};idxs[madonvi]={};}
+				var shiftCode=(isBGDKB)?3:1, key=(isBGDKB)?'NAOC':madonvi, list=names[madonvi], listId=idxs[madonvi], canboCode=machucvu>>shiftCode;
 				
-				list.Nguoigiao = list.Nguoigiao?list.Nguoigiao:[];if(canboCode > 0) list.Nguoigiao.push(item.hoten);
-				list.Nguoiphutrach = list.Nguoiphutrach?list.Nguoiphutrach:[];if(canboCode&1 > 0) list.Nguoiphutrach.push(item.hoten);
-				if(isBGDKB) {if(!(list.Donvinhan)) {list.Donvinhan=obSidebar.origin[1].i; list.Nguoinhan=[];} }
-				else {if(!(list.Donvinhan)) {list.Donvinhan=[item.donvi];};
-					if(canboCode==0) {list.Nguoinhan=list.Nguoinhan?list.Nguoinhan:[];list.Nguoinhan.push(item.hoten);}};
+				if(!list.Nguoigiao) {list.Nguoigiao=[]; listId.Nguoigiao=[];} 
+				if(canboCode > 0) {list.Nguoigiao.push(item.hoten); listId.Nguoigiao.push(idx);}
+				if(!list.Phutrach) {list.Phutrach=[]; listId.Phutrach=[];} 
+				if(canboCode&1 > 0) {list.Phutrach.push(item.hoten); listId.Phutrach.push(idx);}
+				if(isBGDKB) {logE(obSidebar.origin)
+					if(!(list.Donvinhan)) {listId.Donvinhan=(list.Donvinhan=obSidebar.origin[1].i).map((iged,igIdx)=>igIdx);list.Nguoinhan=[];listId.Nguoinhan=[]} }
+				else {if(!(list.Donvinhan)) {list.Donvinhan=[item.donvi]; listId.Donvinhan=[0]};
+					if(canboCode==0) {if(!list.Nguoinhan){list.Nguoinhan=[];listId.Nguoinhan=[];}list.Nguoinhan.push(item.hoten);listId.Nguoinhan.push(idx)}};
 				
 			});
-			return out;
+			return {names:names,idxs:idxs};
 		}
 		
 		backupSidebarData=()=>{obSidebar.origin=JSON.parse(JSON.stringify(obSidebar.data))}
@@ -708,10 +712,20 @@
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
 			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
-			var temp = [], idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
-			idElmList.forEach((k,idx)=>temp[idx]=p.elm.form[k+ext].value);
-			var ngaygiao=formatDateForId(new Date(),1), thoihan=(temp[5].length>0)?formatFormDate(temp[5].split('-'),1):undefined;
-			var queryData={timestamp:ngaygiao,id:{},giaoviec:{ngaygiao:getDateJSON(ngaygiao),nguoigiao:getPeopleJSON(temp[0]),chutri:getPeopleJSON(temp[1]),donvi:temp[2],nguoinhan:getPeopleJSON(temp[3]),duan:temp[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:temp[6],daydu:temp[7]}};
+			var vals=[], idxs=[], idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
+			idElmList.forEach((k,idx)=>{var elm=p.elm.form[k+ext]; vals[idx]=elm.value;if(idx<4) idxs[idx]=elm.nextElementSibling?elm.nextElementSibling.value:-1});
+
+			var staffGrIdx=mainData.staff.idxs[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
+			var selPeopleIdxs=idxs.map((item,itIdx)=>item>-1?staffGrIdx[idElmList[itIdx].replace('id','')][item]:-1);
+
+			var ngaygiao=formatDateForId(new Date(),1), thoihan=(vals[5].length>0)?formatFormDate(vals[5].split('-'),1):undefined;
+			var queryData={timestamp:ngaygiao,id:{},
+				nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
+				giaoviec:{ngaygiao:getDateJSON(ngaygiao),
+					nguoigiao:getPeopleJSON(vals[0],selPeopleIdxs[0]),
+					chutri:getPeopleJSON(vals[1],selPeopleIdxs[1]),donvi:vals[2],
+					nguoinhan:getPeopleJSON(vals[3],selPeopleIdxs[3]),
+					duan:vals[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:vals[6],daydu:vals[7]}};
 			
 			var url=`${appscriptConfig.workUrl}?action=${action}&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE(action+':'+url);
@@ -735,12 +749,12 @@
 			tryLoop(['idTencongviec','idNoidungchitiet'],(k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
 		}
 		dataSubmitTask=(p)=>{
-			var temp = [],ext = p.index, keySelect=p.state==0?['idNguoithuchien','idKetquathuchien']:['idNguoitamdung','idLydotamdung'];
-			keySelect.forEach((k,idx)=>{temp[idx]=p.elm.form[k+ext].value});
+			var vals = [],ext = p.index, keySelect=p.state==0?['idNguoithuchien','idKetquathuchien']:['idNguoitamdung','idLydotamdung'];
+			keySelect.forEach((k,idx)=>{vals[idx]=p.elm.form[k+ext].value});
 			
 			Array.from(document.getElementsByClassName('pheduyet')).forEach((submitBtn)=>{submitBtn.disabled=true});
-			var thuchienData=()=>({thuchien:{ok:1,ngayhoanthanh:getDateJSON(formatDateForId(new Date(),1)),nguoithuchien:getPeopleJSON(temp[0]),ketqua:temp[1],pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
-			var tamdungData=()=>({tamdung:{ok:1,ngayxintamdung:getDateJSON(formatDateForId(new Date(),1)),nguoixintamdung:getPeopleJSON(temp[0]),lydo:temp[1],pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
+			var thuchienData=()=>({thuchien:{ok:1,ngayhoanthanh:getDateJSON(formatDateForId(new Date(),1)),nguoithuchien:getPeopleJSON(vals[0]),ketqua:vals[1],pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
+			var tamdungData=()=>({tamdung:{ok:1,ngayxintamdung:getDateJSON(formatDateForId(new Date(),1)),nguoixintamdung:getPeopleJSON(vals[0]),lydo:vals[1],pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
 			var queryData=p.state==0?thuchienData():tamdungData();
 			var pos = p.index+3;
 			
@@ -756,11 +770,11 @@
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		dataConfirmTask=(p)=>{
-			var temp = [],ext = p.index, keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
-			keySelect.forEach((k,idx)=>{temp[idx]=p.elm.form[k+ext].value});
+			var vals = [],ext = p.index, keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
+			keySelect.forEach((k,idx)=>{vals[idx]=p.elm.form[k+ext].value});
 			
 			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
-			var pheduyetData={ok:(2-p.state),ngaypheduyet:getDateJSON(formatDateForId(new Date(),1)),nguoipheduyet:getPeopleJSON(temp[0]),noidung:temp[1]};
+			var pheduyetData={ok:(2-p.state),ngaypheduyet:getDateJSON(formatDateForId(new Date(),1)),nguoipheduyet:getPeopleJSON(vals[0]),noidung:vals[1]};
 			var tinhtrang=(pheduyetData.ok==2?'Từ chối yêu cầu,':'')+(p.source=='thuchien'?'Hoàn thành':'Tạm dừng');
 			var queryData={}; queryData[p.source]={pheduyet:pheduyetData}; queryData.tinhtrang=tinhtrang;
 			var pos = p.index+3;
@@ -904,7 +918,10 @@
 		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>2 && ns[0].length>3)?lastWord(name):name}
 		lastWord=(word)=>word.slice(word.lastIndexOf(' '));
 
-		getPeopleJSON=(name)=>({hoten:name,ten:nameShort(name),maACV:'',madonvi:mainData.user.madonvi/*TODO: query madonvi user*/})
+		getPeopleJSON=(name,staffIdxIfExist)=>{
+			var staffItem = staffIdxIfExist>-1?mainData.staffList[staffIdxIfExist]:{maAcv:'',madonvi:''};
+			return {hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
+		}
 		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:{full:'',short:''}
 
 		//function testMapJsonValue(){mapJsonValue(getJsonKey(),openSheet(workSj).getRange(3,1,1,10).getDisplayValues())}
@@ -925,7 +942,7 @@
   	initAutoStaffList=()=>{
   		logE('is staff list ready? => '+staffListReady);
   		if(!staffListReady) return;
-  		var staffGr=mainData.staff[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
+  		var staffGr=mainData.staff.names[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
   		Object.keys(staffGr).forEach(key=>tryLoop(['class'+key],(clForAuto)=>elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key]))));
   	}
   	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
