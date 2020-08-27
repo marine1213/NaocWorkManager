@@ -137,10 +137,10 @@
 	</div>
 	<script description="overlaySidebar">
 	var obSidebar = {data:[
-		{n:'Thông dụng',i:['Công việc của tôi','Liên quan tới tôi','Công việc đơn vị','Công việc trung tâm'],c:['mine','related','mygroup','mycentre']},
-		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng'],
-			c:['TBTTDD','CDD','BTSD','MTKB','VPKB']},
-		],active:{g:0,i:3}};
+		{n:'Thông dụng',i:['Công việc của tôi','Công việc đơn vị','Công việc trung tâm'],c:['mine','mygroup','NAOC']},
+		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng','Quản lý CHK Nà Sản'],
+			c:['TBTTDD','CDD','BTSD','MTKB','VPKB','CHKNS']},
+		],active:{g:0,i:0}};
 
 	const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idUserSubName',
 									'idSignedInEmail','idDonvi','idUserImg'];
@@ -185,7 +185,7 @@
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
     }
 
-    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param)};
+    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param);logF(initAutoStaffList);};
 
     sidebarSearch=(p)=>{
     	var searchVal=p.elm.value.toUpperCase();
@@ -311,7 +311,8 @@
 				var obSolieu={};
 				initSolieu=()=>{initElm(obSolieu,['no','percent','bar','table'],['idSolieuNo','idSolieuPercent','idSolieuBar','idSolieuTable']);}
 				obSolieu.setStats=function(dataTbl){
-					var pcent=(dataTbl[3]/dataTbl[0]*100).toFixed(1)+'%';this.no.innerHTML=dataTbl[3];this.percent.innerHTML=pcent;this.bars.width=pcent;
+					var pcent=((dataTbl[0]!=0)?(dataTbl[3]/dataTbl[0]*100).toFixed(1):0)+'%';
+					this.no.innerHTML=dataTbl[3];this.percent.innerHTML=pcent;this.bars.width=pcent;
 					Array.from(this.table.getElementsByClassName('solieuTableData')).map((el,elIdx)=>{el.innerHTML=dataTbl[elIdx]});
 					drawChart(0,dataTbl);
 				}
@@ -347,14 +348,17 @@
 						</div>
 						<div class="pLR15px collapsible-body m0px">
 							<form autocomplete="off" class="w3-row" name="idGiaoviecForm" id="idGiaoviecForm">
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNgLaoDong classFastMode">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNguoigiao classFastMode">
 								</div>
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classNgLaoDong">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classNguoiphutrach">
 								</div>
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhoihop">Bên phối hợp</label><input type="text" name="idPhoihop" class="classNgLaoDong">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idDonvinhan">Đơn vị thực hiện</label><input type="text" name="idDonvinhan" class="classDonvinhan">
+								</div>
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idNguoinhan">Người thực hiện</label><input type="text" name="idNguoinhan" class="classNguoinhan">
 								</div>
 								<div class="w3-col s8 w3-container">
 									<label for="idDuan">Thuộc dự án</label><input type="text" name="idDuan" class="classDuan">
@@ -418,13 +422,13 @@
 					</div>
 					<div class="hidden">
 						<form class="w3-row hidden hoanthanhForm" autocomplete="off">
-							<div class="w3-col s8"><label>Người thực hiện</label><input type="text" name="idNguoithuchien${index}" class="classNgLaoDong classFastMode"></div>
+							<div class="w3-col s8"><label>Người thực hiện</label><input type="text" name="idNguoithuchien${index}" class="classNguoinhan classFastMode"></div>
 							<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea" name="idKetquathuchien${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:0})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
 						<form class="w3-row hidden tamdungForm" autocomplete="off">
-							<div class="w3-col s8"><label>Người xin tạm dừng</label><input type="text" name="idNguoitamdung${index}" class="classNgLaoDong classFastMode"></div>
+							<div class="w3-col s8"><label>Người xin tạm dừng</label><input type="text" name="idNguoitamdung${index}" class="classNguoinhan classFastMode"></div>
 							<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea" name="idLydotamdung${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:1})" type="button">Gửi đi phê duyệt</button></div></div>
@@ -438,13 +442,13 @@
 					</div>
 					<div class="hidden">
 						<form class="w3-row hidden" autocomplete="off">
-							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoikhongphe${index}" class="classNgLaoDong classFastMode"></div>
+							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoikhongphe${index}" class="classNguoigiao classFastMode"></div>
 							<div class="w3-col s11"><label>Vấn đề còn tồn tại</label><textarea class="materialize-textarea" name="idNoidungkophe${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:0,source:'${source}'})" type="button">Xác nhận</button></div></div>
 						</form>
 						<form class="w3-row hidden" autocomplete="off">
-							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoipheduyet${index}" class="classNgLaoDong classFastMode"></div>
+							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoipheduyet${index}" class="classNguoigiao classFastMode"></div>
 							<div class="w3-col s11"><label>Nội dung phê duyệt</label><textarea class="materialize-textarea" name="idNoidungphe${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:'${source}'})" type="button">Xác nhận</button></div></div>
@@ -473,7 +477,8 @@
 									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
 									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
 									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
-									<p><b>Phối hợp cùng: </b>${item.giaoviec.phoihop.hoten}</p>
+									<p><b>Đơn vị thực hiện: </b>${item.giaoviec.donvi.ten}</p>
+									<p><b>Người thực hiện: </b>${item.giaoviec.nguoinhan.hoten}</p>
 									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
 									${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
 									<p><b>Nội dung chi tiết:</b></p>
@@ -483,7 +488,8 @@
 									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
 									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
 									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
-									<p><b>Phối hợp cùng: </b>${item.giaoviec.phoihop.hoten}</p>
+									<p><b>Đơn vị thực hiện: </b>${item.giaoviec.donvi.ten}</p>
+									<p><b>Người thực hiện: </b>${item.giaoviec.nguoinhan.hoten}</p>
 									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
 									${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
 									<p><b>Nội dung chi tiết:</b></p>
@@ -499,14 +505,17 @@
 								<div class="w3-cell w3-center hidden dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentEditToggle,{elm:this,index:${index}})">Sửa nội dung Giao việc</button></div>
 							</div>
 							<form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}" autocomplete="off">
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}" class="classNgLaoDong">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}" class="classNguoigiao">
 								</div>
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classNgLaoDong">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classNguoiphutrach">
 								</div>
-								<div class="w3-col s12 m4 w3-container">
-									<label for="idPhoihop${index}">Bên phối hợp</label><input type="text" name="idPhoihop${index}" class="classNgLaoDong">
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idDonvinhan${index}">Đơn vị thực hiện</label><input type="text" name="idDonvinhan${index}" class="classDonvinhan">
+								</div>
+								<div class="w3-col s12 m6 l3 w3-container">
+									<label for="idNguoinhan${index}">Người thực hiện</label><input type="text" name="idNguoinhan${index}" class="classNguoinhan">
 								</div>
 								<div class="w3-col s8 w3-container">
 									<label for="idDuan${index}">Thuộc dự án</label><input type="text" name="idDuan${index}" class="classDuan">
@@ -548,15 +557,16 @@
 					tempTags.stBatdau="Từ "+item.giaoviec.ngaygiao.short;
 					if(item.giaoviec.thoihan.short.length>0) tempTags.stKetthuc="Đến "+item.giaoviec.thoihan.short;
 					if(item.giaoviec.ngaygiao.full==formatDateForId(new Date(),1)) tempTags.stMoi="Mới";
+					item.tempTags=tempTags; // bổ sung tempTags để lọc theo tags, các tags mới: Quá hạn/Hết hạn hôm nay/Mới sẽ ko có trong tình trạng
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
 				dataFilter=(item, filter)=>{
 					analyzeSidebarSearchTerm=()=>{switch(filter.sidebarSearchTerm){
-						case 'mycentre': return true;
+						case 'NAOC': return true;
 						case 'mygroup': return item.giaoviec.chutri.madonvi==mainData.user.madonvi;
 						case 'mine': return item.giaoviec.chutri.hoten==mainData.user.hoten;
 						case 'related': return item.giaoviec.phoihop.hoten==mainData.user.hoten;
-						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': return item.giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
+						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':return item.giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
 						case 'Duan': return item.giaoviec.duan==filter.sidebarSearchTx;
 						default: return true;}}
 					analyzeMainSearchTerm=(isolatedItem,lastResult)=>{var t=typeof isolatedItem;
@@ -604,6 +614,8 @@
 		setMainTitle=(p)=>{obMain.tieude.children[0].innerHTML=obSidebar.data[p.g].i[p.i]};
 		setMainList=(p)=>{
 			var obSdp=obSidebar.data[p.g],mfc=mainData.filter;[mfc.sidebarSearchTerm,mfc.sidebarSearchTx]=[obSdp.c[p.i],obSdp.i[p.i]];
+			getDonvi=(clickState)=>(clickState=='mine'||clickState=='mygroup')?mainData.user.madonvi:((clickState=='Duan')?'NAOC':clickState);
+			mainData.view.state=getDonvi(obSdp.c[p.i]);
 			if(uiReady) {logF(updateListDulieu);logF(uiSetPermission);}
 		};
 		setMainSolieu=()=>{if(uiReady){statisticLoading(mainData.congviecList);drawChart()}};//bug here When sidebarItem selected
@@ -618,7 +630,7 @@
 		bitSelect=(input,challenge)=>((input>>challenge)&1);
 		var lockMainSearch=false;
 		mainSearch=(p)=>{ lockMainSearch=true;if((mainData.filter.mainSearchTerm=p.elm.value).length<10)
-				setTimeout(()=>{sidebarItemClick(obSidebar.active);lockMainSearch=false},2500);else{sidebarItemClick(obSidebar.active);lockMainSearch=false;}}
+				setTimeout(()=>{sidebarItemClick(obSidebar.active);lockMainSearch=false},2000);else{sidebarItemClick(obSidebar.active);lockMainSearch=false;}}
 		focusMainSearch=()=>mainSolieuHideOnSmall();
 		
 	</script>
@@ -658,10 +670,28 @@
 			logE('getList+user:'+url);
 			callGasApi(url,true).then(gasApiCb).then(response=>{
 				logE('getList User Ok:')
+				staffListReady = true;
 				mainData.staffList=mapJsonValue(response.header,decompressSheetValues(response.values));
-				mainData.staffAutoList=mainData.staffList.map(item=>item.hoten);
+				// mainData.staffAutoList=mainData.staffList.map(item=>item.hoten); //TODO: viet lai
+				mainData.staff = staffGrouping(mainData.staffList);
 				logF(initAutoStaffList);
 			},er=>alertEr('GasApiError',er));
+		}
+
+		staffGrouping=(items)=>{
+			var out={};
+			items.forEach(item=>{
+				var madonvi=item.madonvi, machucvu=item.machucvu, isBGDKB = madonvi=='BGDKB';out[madonvi]=out[madonvi]?out[madonvi]:{};
+				var shiftCode=(isBGDKB)?3:1, key=(isBGDKB)?'NAOC':madonvi, list=out[madonvi], canboCode=machucvu>>shiftCode;
+				
+				list.Nguoigiao = list.Nguoigiao?list.Nguoigiao:[];if(canboCode > 0) list.Nguoigiao.push(item.hoten);
+				list.Nguoiphutrach = list.Nguoiphutrach?list.Nguoiphutrach:[];if(canboCode&1 > 0) list.Nguoiphutrach.push(item.hoten);
+				if(isBGDKB) {if(!(list.Donvinhan)) {list.Donvinhan=obSidebar.origin[1].i; list.Nguoinhan=[];} }
+				else {if(!(list.Donvinhan)) {list.Donvinhan=[item.donvi];};
+					if(canboCode==0) {list.Nguoinhan=list.Nguoinhan?list.Nguoinhan:[];list.Nguoinhan.push(item.hoten);}};
+				
+			});
+			return out;
 		}
 		
 		backupSidebarData=()=>{obSidebar.origin=JSON.parse(JSON.stringify(obSidebar.data))}
@@ -678,10 +708,10 @@
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
 			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
-			var temp = [];
-			['idNguoigiao','idPhutrach','idPhoihop','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'].forEach((k,idx)=>temp[idx]=p.elm.form[k+ext].value);
-			var ngaygiao=formatDateForId(new Date(),1), thoihan=(temp[4].length>0)?formatFormDate(temp[4].split('-'),1):undefined;
-			var queryData={timestamp:ngaygiao,id:{},giaoviec:{ngaygiao:getDateJSON(ngaygiao),nguoigiao:getPeopleJSON(temp[0]),chutri:getPeopleJSON(temp[1]),phoihop:getPeopleJSON(temp[2]),duan:temp[3],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:temp[5],daydu:temp[6]}};
+			var temp = [], idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
+			idElmList.forEach((k,idx)=>temp[idx]=p.elm.form[k+ext].value);
+			var ngaygiao=formatDateForId(new Date(),1), thoihan=(temp[5].length>0)?formatFormDate(temp[5].split('-'),1):undefined;
+			var queryData={timestamp:ngaygiao,id:{},giaoviec:{ngaygiao:getDateJSON(ngaygiao),nguoigiao:getPeopleJSON(temp[0]),chutri:getPeopleJSON(temp[1]),donvi:temp[2],nguoinhan:getPeopleJSON(temp[3]),duan:temp[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:temp[6],daydu:temp[7]}};
 			
 			var url=`${appscriptConfig.workUrl}?action=${action}&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE(action+':'+url);
@@ -693,15 +723,15 @@
 		      }
 		      logF(dataToMem);
 		      p.elm.disabled=false;
-		      ['idNguoigiao','idPhutrach','idPhoihop','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'].forEach((k,idx)=>p.elm.form[k+ext].value = '');
+		      idElmList.forEach((k,idx)=>p.elm.form[k+ext].value = '');
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		taskContentSetUI=(p)=>{
 			var item=mainData.congviecList[p.index];
 			const giaoviecSubkey=['hoten','hoten','hoten','full'], noidungKey=['tomtat','daydu'];
-			var gv=['nguoigiao','chutri','phoihop','thoihan'].map((k,idx)=>
+			var gv=['nguoigiao','chutri','nguoinhan','thoihan'].map((k,idx)=>
 				{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=3?v:formatFormDate(v.split('/'),'-')});
-			tryLoop(['idNguoigiao','idPhutrach','idPhoihop','idNgayYeucau'],(k,idx)=>{p.elm[k+p.index].value=gv[idx]});
+			tryLoop(['idNguoigiao','idPhutrach','idNguoinhan','idNgayYeucau'],(k,idx)=>{p.elm[k+p.index].value=gv[idx]});
 			tryLoop(['idTencongviec','idNoidungchitiet'],(k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
 		}
 		dataSubmitTask=(p)=>{
@@ -789,7 +819,8 @@
 			}],
 			filter:{sidebarSearchTerm:'',mainSearchTerm:''},
 			settings:{fastMode:false},
-			support:{storage:false}
+			support:{storage:false},
+			view:{state:'mine'}
 		};
 		testDulieu=()=>{
 			var items=[{
@@ -891,7 +922,12 @@
   <script src="lib/autocomplete-js.js"></script>
   <link rel="stylesheet" type="text/css" href="lib/autocomplete-css.css">
   <script description="autocomplete">
-  	initAutoStaffList=()=>{tryLoop(['classNgLaoDong'],(classForAuto)=>elmLoop(document,classForAuto,e=>autocomplete(e,mainData.staffAutoList)));}
+  	initAutoStaffList=()=>{
+  		logE('is staff list ready? => '+staffListReady);
+  		if(!staffListReady) return;
+  		var staffGr=mainData.staff[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
+  		Object.keys(staffGr).forEach(key=>tryLoop(['class'+key],(clForAuto)=>elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key]))));
+  	}
   	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
   </script>
   <script>
