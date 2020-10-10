@@ -1,14 +1,18 @@
-function autocomplete(inp, arr) {
+function autocomplete(inp, arr, onItemClicked, params) {
   /*the autocomplete function takes two arguments,
   the text field element and an array of possible autocompleted values:*/
   var currentFocus;
   /*execute a function when someone writes in the text field:*/
   inp.addEventListener("input", function(e) {
-      var a, b, i, val = this.value;
+      var a, b, i, inputValue = this.value;
       /*close any already open lists of autocompleted values*/
       closeAllLists();
-      if (!val) { return false;}
+      var lastCommaIdx=inputValue.lastIndexOf(', ')+2;
+      var focusedVal=(lastCommaIdx>1)?inputValue.substring(lastCommaIdx):inputValue;
+      var remainVal=(lastCommaIdx>1)?inputValue.substring(0,lastCommaIdx):'';
+
       currentFocus = -1;
+      if (!focusedVal) { return false;}
       /*create a DIV element that will contain the items (values):*/
       a = document.createElement("DIV");
       a.setAttribute("id", this.id + "autocomplete-list");
@@ -19,11 +23,11 @@ function autocomplete(inp, arr) {
       /*for each item in the array...*/
       for (i = 0; i < arr.length; i++) {
         /*check if the item starts with the same letters as the text field value:*/
-        var startIdx=arr[i].toUpperCase().indexOf(val.toUpperCase());
+        var startIdx=arr[i].toUpperCase().indexOf(focusedVal.toUpperCase());
         if(startIdx > -1){
         // if (arr[i].substr(startIdx, startIdx+val.length).toUpperCase() == val.toUpperCase()) {
             /*create a DIV element for each matching element:*/
-            var endIdx=startIdx+val.length;
+            var endIdx=startIdx+focusedVal.length;
             b = document.createElement("DIV");
             /*make the matching letters bold:*/
             b.innerHTML = arr[i].substring(0,startIdx);
@@ -35,12 +39,15 @@ function autocomplete(inp, arr) {
             b.addEventListener("click", function(e) {
               /*insert the value for the autocomplete text field:*/
               var idx=parseInt(this.getElementsByTagName("input")[0].value);
-              inp.value = arr[idx];
+              inp.value = remainVal+arr[idx];
               
-              var nextElm=inp.nextElementSibling;
-              addNewElm=()=>{var nElm=document.createElement("input");nElm.type='hidden'; inp.parentNode.appendChild(nElm);return nElm}
-              var hiddenInput = (nextElm.value!=undefined)?nextElm:addNewElm();
-              hiddenInput.value=idx;
+              if(onItemClicked) onItemClicked(inp,arr,idx,params);
+              else{
+                var nextElm=inp.nextElementSibling, hiddenInput, savedValue;
+                addNewElm=()=>{var nElm=document.createElement("input");nElm.type='hidden'; inp.parentNode.appendChild(nElm);return nElm}
+                if(nextElm.value!=undefined) {savedValue=JSON.parse(nextElm.value);hiddenInput=nextElm;}else{savedValue=[];hiddenInput=addNewElm()}
+                savedValue.push(idx);hiddenInput.value=JSON.stringify(savedValue);
+              }
               /*close the list of autocompleted values,
               (or any other open lists of autocompleted values:*/
               closeAllLists();

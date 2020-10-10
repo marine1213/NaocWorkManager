@@ -55,7 +55,7 @@
 
 		input.searchDark{color: #fff;}
 
-		.stThuchien{background-color: #109618; color: #fff; opacity: 0.75}
+		.sthoanthanh{background-color: #109618; color: #fff; opacity: 0.75}
 		.stChoduyetHoanthanh{background-color: #02a99a; color: #fff; opacity: 0.9}
 		.stChoduyetTamdung{background-color: #f5c043; color: #000; opacity: 0.9}
 		.stTuchoiYeucau{background-color: #e91b86; color: #fff; opacity: 0.75}
@@ -85,7 +85,7 @@
 <body class="fullh unseen" onresize="logF(onScreenResize)">
 	
 	<!-- Overlay -->
-  <div class="w3-overlay w3-display-container" onclick="logF(overlayHiddenOnly)" style="cursor:pointer" id="idOverlay">
+  <div class="w3-overlay w3-display-container ptr" onclick="logF(overlayHiddenOnly)" id="idOverlay">
   	<div class="lds-spinner w3-display-middle" id="idOverlaySpinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
   	<div class="w3-card-4 w3-display-middle w3-white hidden" id="idOverlayPanel" style="width: 350px; height: 400px;z-index: 2">
 		<div class="w3-bar"><h3 class="w3-bar-item">Cài đặt</h3><h5 class="w3-right w3-bar-item" onclick="logF(overlayHiddenAll)">&times;</h5></div>
@@ -317,12 +317,12 @@
 					drawChart(0,dataTbl);
 				}
 				statisticLoading=(cvList)=>{
-					var idx={dangthuchien:1,tamdung:2,hoanthanh:3,quahan:4,choduyetHoanthanh:5,choduyetTamdung:6}, countCv=0;
+					var idx={danghoanthanh:1,tamdung:2,hoanthanh:3,quahan:4,choduyetHoanthanh:5,choduyetTamdung:6}, countCv=0;
 					var statisticalTbl = cvList.reduce((out,item)=>{
 						if(dataFilter(item,mainData.filter)==false) return out;
 						out[0]++;
 
-						if(item.tinhtrang.search(/thực hiện/gi)>-1) out[idx.dangthuchien]++;
+						if(item.tinhtrang.search(/thực hiện/gi)>-1) out[idx.danghoanthanh]++;
 						var testHoanthanh = item.tinhtrang.search(/hoàn thành/gi)>-1, testTamdung = item.tinhtrang.search(/tạm dừng/gi)>-1;
 						if(testHoanthanh) out[idx.hoanthanh]++; if(testTamdung) out[idx.tamdung]++;
 
@@ -348,17 +348,18 @@
 						</div>
 						<div class="pLR15px collapsible-body m0px">
 							<form autocomplete="off" class="w3-row" name="idGiaoviecForm" id="idGiaoviecForm">
-								<div class="w3-col s12 m6 l3 w3-container">
+								<div class="w3-col s12 m4  w3-container">
 									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNguoigiao classFastMode">
 								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
+								<div class="w3-col s12 m4  w3-container">
 									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classPhutrach">
 								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idDonvinhan">Đơn vị thực hiện</label><input type="text" name="idDonvinhan" class="classDonvinhan">
-								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
+								<div class="w3-col s12 m4  w3-container">
 									<label for="idNguoinhan">Người thực hiện</label><input type="text" name="idNguoinhan" class="classNguoinhan">
+								</div>
+								<div class="w3-col s12 w3-container">
+									<label for="idDonvinhan" id="idDonvinhanLabel">Đơn vị thực hiện</label>
+									<input type="text" name="idDonvinhan" class="classDonvinhan">
 								</div>
 								<div class="w3-col s8 w3-container">
 									<label for="idDuan">Thuộc dự án</label><input type="text" name="idDuan" class="classDuan">
@@ -392,19 +393,23 @@
 				addListDulieu=(items)=>{items.forEach((item,itemIdx)=>dataFilter(item,mainData.filter)?addItemDulieu(item,itemIdx):'');}
 				addItemDulieu=(item,index)=>{
 					var elmTags=tagAnalysis(item);
-					var thuchienPheduyetOkCode = item.thuchien.pheduyet.ok, tamdungPheduyetOkCode = item.tamdung.pheduyet.ok;
-					var thuchienOk=item.thuchien.ok.length>0,thuchienPheduyetOk=(item.thuchien.pheduyet.ok.length>0&&thuchienPheduyetOkCode>0);
+
+					var hoanthanhPheduyetOkCode = item.hoanthanh.pheduyet.ok, tamdungPheduyetOkCode = item.tamdung.pheduyet.ok;
+
+					var thuchienOk=(item.thuchien.ok.length>0&&item.thuchien.ok>0);
+					var hoanthanhOk=item.hoanthanh.ok.length>0,hoanthanhPheduyetOk=(item.hoanthanh.pheduyet.ok.length>0&&hoanthanhPheduyetOkCode>0);
 					var tamdungOk=item.tamdung.ok.length>0,tamdungPheduyetOk=(item.tamdung.pheduyet.ok.length>0&&tamdungPheduyetOkCode>0);
-					var elmExtend=thuchienOk>0?(
-						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Thực hiện</b></h4><p><b>Người thực hiện: </b>${item.thuchien.nguoithuchien.hoten}</p>
-						<p><b>Ngày hoàn thành: </b>${item.thuchien.ngayhoanthanh.full}</p>
-						<p><b>Kết quả thực hiện: </b></p><p>${item.thuchien.ketqua.split('\n').join('</p><p>')}</p></div>`
-					+((thuchienPheduyetOk>0)?
+
+					var elmExtend=hoanthanhOk>0?(
+						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Hoàn thành</b></h4><p><b>Người thực hiện: </b>${item.hoanthanh.nguoihoanthanh.hoten}</p>
+						<p><b>Ngày hoàn thành: </b>${item.hoanthanh.ngayhoanthanh.full}</p>
+						<p><b>Kết quả thực hiện: </b></p><p>${item.hoanthanh.ketqua.split('\n').join('</p><p>')}</p></div>`
+					+((hoanthanhPheduyetOk>0)?
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Phê duyệt Hoàn thành:</b></h4><p>
-						<p><b>Người phê duyệt: </b>${item.thuchien.pheduyet.nguoipheduyet.hoten}</p>
-						<p><b>Ngày phê duyệt: </b>${item.thuchien.pheduyet.ngaypheduyet.full}</p>
-						<p><b>Nội dung: </b> Kết quả ${thuchienPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
-						<p>${item.thuchien.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
+						<p><b>Người phê duyệt: </b>${item.hoanthanh.pheduyet.nguoipheduyet.hoten}</p>
+						<p><b>Ngày phê duyệt: </b>${item.hoanthanh.pheduyet.ngaypheduyet.full}</p>
+						<p><b>Nội dung: </b> Kết quả ${hoanthanhPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
+						<p>${item.hoanthanh.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
 					elmExtend+=tamdungOk?(
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Tạm dừng</b></h4><p><b>Người xin tạm dừng: </b>${item.tamdung.nguoixintamdung.hoten}</p>
 						<p><b>Ngày xin tạm dừng: </b>${item.tamdung.ngayxintamdung.full}</p>
@@ -415,40 +420,45 @@
 						<p><b>Ngày phê duyệt: </b>${item.tamdung.pheduyet.ngaypheduyet.full}</p>
 						<p><b>Nội dung: </b> Yêu cầu tạm dừng ${tamdungPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
 						<p>${item.tamdung.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
-					var stateBtns=
+
+					var hoanthanhBtns=
 					`<div class="nhanvienCtrl hidden"><div class="w3-cell-row">
 						<div class="w3-cell w3-center" ><button class="w3-button w3-blue w95" onclick="logF(itemStateSelected,{elm:this,state:2});">Hoàn thành</button></div>
 						<div class="w3-cell w3-center"><button class="w3-button w3-orange w95" onclick="logF(itemStateSelected,{elm:this,state:3});">Tạm dừng</button></div>
 					</div>
-					<div class="hidden">
+					<div class="hidden w3-container mT10p">
 						<form class="w3-row hidden hoanthanhForm" autocomplete="off">
-							<div class="w3-col s8"><label>Người thực hiện</label><input type="text" name="idNguoithuchien${index}" class="classNguoinhan classFastMode"></div>
-							<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea" name="idKetquathuchien${index}"></textarea></div>
+							<div class="w3-col s8"><label>Người hoàn thành</label><input class="inputTag hidden" id="inputTagNguoihoanthanh${index}" value='${JSON.stringify(item.hoanthanh.nguoihoanthanh)}'>
+							<input type="text" name="idNguoihoanthanh${index}" class="classNguoihoanthanh classFastMode"></div>
+							<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea" name="idKetquahoanthanh${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:0})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
 						<form class="w3-row hidden tamdungForm" autocomplete="off">
-							<div class="w3-col s8"><label>Người xin tạm dừng</label><input type="text" name="idNguoitamdung${index}" class="classNguoinhan classFastMode"></div>
+							<div class="w3-col s8"><label>Người xin tạm dừng</label><input class="inputTag hidden" id="inputTagNguoixintamdung${index}" value='${JSON.stringify(item.tamdung.nguoixintamdung)}'>
+							<input type="text" name="idNguoixintamdung${index}" class="classNguoixintamdung classFastMode"></div>
 							<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea" name="idLydotamdung${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:1})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
 					</div></div>`;
-					var source=thuchienOk?'thuchien':'tamdung', btnStateColor=thuchienOk?'w3-blue':'w3-orange', stateTx=thuchienOk?'hoàn thành':'tạm dừng';
+					var source=hoanthanhOk?'hoanthanh':'tamdung', btnStateColor=hoanthanhOk?'w3-blue':'w3-orange', stateTx=hoanthanhOk?'hoàn thành':'tạm dừng';
 					var pheduyetBtns=
 					`<div class="pheduyetCtrl hidden"><div class="w3-cell-row">
 						<div class="w3-cell w3-center" ><button class="w3-button w3-gray w95" onclick="logF(itemStateSelected,{elm:this,state:2});">Không duyệt ${stateTx}</button></div>
 						<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} w95" onclick="logF(itemStateSelected,{elm:this,state:3});">Phê Duyệt ${stateTx}</button></div>
 					</div>
-					<div class="hidden">
+					<div class="hidden w3-container mT10p">
 						<form class="w3-row hidden" autocomplete="off">
-							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoikhongphe${index}" class="classNguoigiao classFastMode"></div>
+							<div class="w3-col s8"><label>Người phê duyệt</label><input class="inputTag hidden" id="inputTagNguoikhongphe${index}">
+							<input type="text" name="idNguoikhongphe${index}" class="classNguoikhongphe classFastMode"></div>
 							<div class="w3-col s11"><label>Vấn đề còn tồn tại</label><textarea class="materialize-textarea" name="idNoidungkophe${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:0,source:'${source}'})" type="button">Xác nhận</button></div></div>
 						</form>
 						<form class="w3-row hidden" autocomplete="off">
-							<div class="w3-col s8"><label>Người phê duyệt</label><input type="text" name="idNguoipheduyet${index}" class="classNguoigiao classFastMode"></div>
+							<div class="w3-col s8"><label>Người phê duyệt</label><input class="inputTag hidden" id="inputTagNguoipheduyet${index}">
+							<input type="text" name="idNguoipheduyet${index}" class="classNguoipheduyet classFastMode"></div>
 							<div class="w3-col s11"><label>Nội dung phê duyệt</label><textarea class="materialize-textarea" name="idNoidungphe${index}"></textarea></div>
 							<div class="w3-cell-row">
 							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:'${source}'})" type="button">Xác nhận</button></div></div>
@@ -459,63 +469,27 @@
 						<div class="w3-cell w3-center"><button class="w3-button w3-theme w97 pheduyet" onclick="logF(dataResumeTask,{elm:this,index:${index},source:'${source}'});">Tiếp tục Công việc</button></div>
 					</div>
 					`;
-					var stateExtend=(thuchienOk>0?(thuchienPheduyetOk>0?tieptucBtns:pheduyetBtns):
-						(tamdungOk>0?(tamdungPheduyetOk>0?tieptucBtns:pheduyetBtns):stateBtns));
-					var elmItem=`<li class="classMainListItem">
-						<div class="pLR15px collapsible-header" >
-							<div class="w3-cell-row">
-								<div class="w3-cell m0px width70">
-									<p><label><input type="checkbox"/><span></span></label><span class="pR4px txBlack">${item.noidung.tomtat}</span>${elmTags}</p>
+					var stateExtend=(hoanthanhOk>0?(hoanthanhPheduyetOk>0?tieptucBtns:pheduyetBtns):
+						(tamdungOk>0?(tamdungPheduyetOk>0?tieptucBtns:pheduyetBtns):hoanthanhBtns));
+
+					// var elmDonvinhanTags = item.giaoviec.donvi.madonvi;
+					var giaoviec = item.giaoviec;
+					var elmEditForm = `<form class="w3-row hidden classEditForm" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}" autocomplete="off">
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idNguoigiao${index}">Người giao</label><input class="inputTag hidden" id="inputTagNguoigiao${index}" value='${JSON.stringify(giaoviec.nguoigiao)}'>
+									<input type="text" name="idNguoigiao${index}" class="classNguoigiao">
 								</div>
-								<div class="w3-cell w3-cell-middle width15 txCenter"><p>${item.giaoviec.ngaygiao.short}</p></div>
-								<div class="w3-cell w3-cell-middle width15 txLeft"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div>
-							</div>
-						</div>
-						<div class="pLR15px collapsible-body m0px">
-							<div class="w3-cell-row">
-								<div class="w3-cell w3-hide-medium w3-hide-large">
-									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
-									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
-									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
-									<p><b>Đơn vị thực hiện: </b>${item.giaoviec.donvi.ten}</p>
-									<p><b>Người thực hiện: </b>${item.giaoviec.nguoinhan.hoten}</p>
-									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
-									${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
-									<p><b>Nội dung chi tiết:</b></p>
-									<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idPhutrach${index}">Người phụ trách</label><input class="inputTag hidden" id="inputTagPhutrach${index}" value='${JSON.stringify(giaoviec.chutri)}'>
+									<input type="text" name="idPhutrach${index}" class="classPhutrach">
 								</div>
-								<div class="w3-cell width70 w3-hide-small">
-									<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
-									<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
-									<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
-									<p><b>Đơn vị thực hiện: </b>${item.giaoviec.donvi.ten}</p>
-									<p><b>Người thực hiện: </b>${item.giaoviec.nguoinhan.hoten}</p>
-									<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
-									${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
-									<p><b>Nội dung chi tiết:</b></p>
-									<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idNguoinhan${index}">Người thực hiện</label><input class="inputTag hidden" id="inputTagNguoinhan${index}" value='${JSON.stringify(giaoviec.nguoinhan)}'>
+									<input type="text" name="idNguoinhan${index}" class="classNguoinhan">
 								</div>
-								<div class="w3-cell w3-cell-middle width15 w3-hide-small txCenter"><p>${item.giaoviec.thoihan.short}</p>
-								</div>
-								<div class="w3-cell w3-cell-middle width15 w3-hide-small txLeft"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p>
-								</div>
-							</div>
-							<div class="w3-row fullw">${elmExtend}</div>
-							<div class="w3-cell-row bot10p">
-								<div class="w3-cell w3-center hidden dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentEditToggle,{elm:this,index:${index}})">Sửa nội dung Giao việc</button></div>
-							</div>
-							<form class="w3-row hidden" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}" autocomplete="off">
-								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idNguoigiao${index}">Người giao</label><input type="text" name="idNguoigiao${index}" class="classNguoigiao">
-								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idPhutrach${index}">Người phụ trách</label><input type="text" name="idPhutrach${index}" class="classPhutrach">
-								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idDonvinhan${index}">Đơn vị thực hiện</label><input type="text" name="idDonvinhan${index}" class="classDonvinhan">
-								</div>
-								<div class="w3-col s12 m6 l3 w3-container">
-									<label for="idNguoinhan${index}">Người thực hiện</label><input type="text" name="idNguoinhan${index}" class="classNguoinhan">
+								<div class="w3-col s12 w3-container">
+									<label for="idDonvinhan${index}">Đơn vị thực hiện</label><input class="inputTag hidden" id="inputTagDonvinhan${index}" value='${JSON.stringify(giaoviec.donvi)}'>
+									<input type="text" name="idDonvinhan${index}" class="classDonvinhan">
 								</div>
 								<div class="w3-col s8 w3-container">
 									<label for="idDuan${index}">Thuộc dự án</label><input type="text" name="idDuan${index}" class="classDuan">
@@ -532,8 +506,92 @@
 								<div class="w3-cell-row">
 									<div class="w3-cell w3-center" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentGetUI,{elm:this,index:${index}})">Xác nhận sửa</button></div>
 								</div>
-							</form>
+							</form>`;
+
+					var elmMainContent = `<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
+								<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
+								<p><b>Người phụ trách: </b>${item.giaoviec.chutri.hoten}</p>
+								<p><b>Đơn vị thực hiện: </b>${item.giaoviec.donvi.ten}</p>
+								<p><b>Người thực hiện: </b>${item.giaoviec.nguoinhan.hoten}</p>
+								<p><b>Ngày giao việc: </b>${item.giaoviec.ngaygiao.full}</p>
+								<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
+								${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
+								<p><b>Nội dung chi tiết:</b></p>
+								<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>`;
+
+					
+					getElmStateDetail=()=>{
+						var tempStateDetail = '<p class="pLR7px"><h4><b>Tình trạng công việc (Báo cáo bổ sung)</b></h4></p>';
+						try{
+							var thuchienSubKeys=['hoten','hoten','full','noidung'], thuchienKeys=['nguoigui','nguoithuchien','ngaygui','tinhtrang']
+							var splittedData=thuchienKeys.reduce((out,k,idx)=>{if(k!='ok') out[k]=item.thuchien[k][thuchienSubKeys[idx]].split('\n'); return out;},{});
+							tempStateDetail+=splittedData.nguoigui.map((item,idx)=>
+										`<h5><b>Ngày cập nhật: ${splittedData.ngaygui[idx]}</b></h5>
+										<p><b>Người thực hiện: </b>${splittedData.nguoithuchien[idx]}</p>
+										<p><b>Nội dung chi tiết:</b>${splittedData.tinhtrang[idx]}</p>`
+							).join('<br>');	
+						}catch(e){
+							logE(null,e);
+							tempStateDetail+=`<p><b>Người thực hiện: </b>${item.thuchien.nguoithuchien.hoten}</p>
+									<p><b>Ngày cập nhật: </b>${item.thuchien.ngaygui.full}</p>
+									<p><b>Nội dung chi tiết:</b></p>
+									<p>${item.thuchien.tinhtrang.split('\n').join('</p><p>')}</p>`;
+						}
+						return tempStateDetail;
+					}
+					var elmStateDetail = thuchienOk?getElmStateDetail():'';
+
+					var elmStateEditForm = `<form class="w3-row hidden" name="idStateEditForm${index}" id="idStateEditForm${index}" autocomplete="off">
+								<input class="hidden" id="editFormLastData${index}" value='${JSON.stringify(item.thuchien)}'>
+								<div class="w3-col s12 m6 l5 w3-container">
+									<label for="idCapnhatNguoithuchien${index}">Người thực hiện</label>
+									<input type="text" name="idCapnhatNguoithuchien${index}" class="classCapnhatNguoithuchien">
+								</div>
+								<div class="w3-col s12 w3-container">
+									<label for="idTinhtrangCongviec${index}">Tình trạng công việc</label><input type="text" id="idTinhtrangCongviec${index}"></textarea>
+								</div>
+								<div class="w3-cell-row">
+									<div class="w3-cell w3-center"><button class="w3-button w3-green w97" type="button" onclick="logF(dataUpdateStateTask,{elm:this,index:${index}})">Xác nhận sửa</button></div>
+								</div>
+							</form>`;
+
+					var elmItem=`<li class="classMainListItem">
+						<div class="pLR15px collapsible-header" >
+							<div class="w3-cell-row">
+								<div class="w3-cell m0px width70">
+									<p><label><input type="checkbox"/><span></span></label><span class="pR4px txBlack">${item.noidung.tomtat}</span>${elmTags}</p>
+								</div>
+								<div class="w3-cell w3-cell-middle width15 txCenter"><p>${item.giaoviec.ngaygiao.short}</p></div>
+								<div class="w3-cell w3-cell-middle width15 txLeft"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div>
+							</div>
+						</div>
+						<div class="pLR15px collapsible-body m0px">
+							<div class="w3-cell-row">
+								<div class="w3-cell w3-hide-medium w3-hide-large">
+									${elmMainContent}
+								</div>
+								<div class="w3-cell width70 w3-hide-small">
+									${elmMainContent}
+								</div>
+								<div class="w3-cell w3-cell-middle width15 w3-hide-small txCenter"><p>${item.giaoviec.thoihan.short}</p>
+								</div>
+								<div class="w3-cell w3-cell-middle width15 w3-hide-small txLeft"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p>
+								</div>
+							</div>
+							<br>
+							<div class="w3-cell-row bot10p">
+								<div class="w3-cell w3-center hidden dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentEditToggle,{elm:this,index:${index}})">Sửa nội dung Giao việc</button></div>
+							</div>
+							${elmEditForm}
 							<hr>
+							${elmStateDetail}
+							<br>
+							<div class="w3-cell-row bot10p">
+								<div class="w3-cell w3-center dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskStateEditToggle,{elm:this,index:${index}})">Bổ sung tình trạng công việc</button></div>
+							</div> 
+							${elmStateEditForm}
+							<hr>
+							<div class="w3-row fullw">${elmExtend}</div>
 							${stateExtend}
 						</div>
 					</li>`;
@@ -542,7 +600,7 @@
 				tagAnalysis=(item)=>{
 					var tempTags={};
 					if(item.tinhtrang.search(/Từ chối yêu cầu/gi)>-1) tempTags.stTuchoiYeucau="Từ chối yêu cầu";
-					if(item.tinhtrang.search(/thực hiện/gi)>-1) tempTags.stThuchien="Đang thực hiện";
+					if(item.tinhtrang.search(/thực hiện/gi)>-1) tempTags.sthoanthanh="Đang thực hiện";
 					if(item.tinhtrang.search(/hoàn thành/gi)>-1) tempTags.stHoanthanh="Hoàn thành";
 					if(item.tinhtrang.search(/tạm dừng/gi)>-1) tempTags.stTamdung="Tạm dừng";
 					if(tempTags.stHoanthanh&&item.tinhtrang.search(/chờ duyệt/gi)>-1) tempTags.stChoduyetHoanthanh="Chờ duyệt";
@@ -551,22 +609,56 @@
 					if(tempTags.stHoanthanh!="Hoàn thành"){
 						var fDue=item.giaoviec.thoihan.full.split('/'), deltaTime=new Date()-new Date(fDue[2],fDue[1]-1,parseInt(fDue[0])+1);
 						if(deltaTime>0) tempTags.stQuahan="Quá hạn";
-						if(item.giaoviec.thoihan.full==formatDateForId(new Date(),1)) tempTags.stHethan="Hết hạn hôm nay";
+						if(item.giaoviec.thoihan.full==getToday()) tempTags.stHethan="Hết hạn hôm nay";
 					}
 
 					tempTags.stBatdau="Từ "+item.giaoviec.ngaygiao.short;
 					if(item.giaoviec.thoihan.short.length>0) tempTags.stKetthuc="Đến "+item.giaoviec.thoihan.short;
-					if(item.giaoviec.ngaygiao.full==formatDateForId(new Date(),1)) tempTags.stMoi="Mới";
+					if(item.giaoviec.ngaygiao.full==getToday()) tempTags.stMoi="Mới";
 					item.tempTags=tempTags; // bổ sung tempTags để lọc theo tags, các tags mới: Quá hạn/Hết hạn hôm nay/Mới sẽ ko có trong tình trạng
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
+				onInputTagAdded=(inpElm,arr,idx,params)=>{
+					var staffId=mainData.staff.idxs[params.viewState][params.sectionKey][idx]; //[BGDKB][Donvinhan][0]
+					var htmlTag=`<a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="${params.clName}TagActive" id="tagActive${staffId}">${arr[idx]}</a>
+					<i class="ptr" onclick="this.parentElement.remove();">&times</i></div>`;
+					inpElm.parentElement.children[0].insertAdjacentHTML('afterend',htmlTag);
+					inpElm.value = '';
+				}
+				parseTagsForInput=()=>{
+			  		var viewState=mainData.view.state=='NAOC'?'BGDKB':mainData.view.state;
+					tagValueEachEditForm=(itemForm)=>{
+						var formIndex=itemForm.id.replace('idGiaoviecForm','');
+						tagValueEachInput=(sectionKey)=>{var inputOb=itemForm['inputTag'+sectionKey+formIndex];var savedOb=JSON.parse(inputOb.value),key=sectionKey=='Donvinhan'?'ten':'hoten';
+							tagValueEachItem=(out,item,idx)=>{
+								searchForId=(out,itemName,idx)=>out==-1?(item==itemName?idx:-1):out;
+								var viewScope = viewState;
+								do{
+									var dataIdx=mainData.staff.names[viewScope][sectionKey].reduce(searchForId,-1);
+									if(dataIdx==-1) {if(viewScope=='BGDKB') {logE(null,'Lỗi, không tìm thấy người này trong danh sách');break;} else viewScope='BGDKB';}
+								}while(dataIdx==-1);
+
+								var staffId=mainData.staff.idxs[viewScope][sectionKey][dataIdx]; //[BGDKB][Donvinhan][0]
+								var htmlTag=`<a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="class${sectionKey}TagActive" id="tagActive${staffId}">${item}</a><i class="ptr" onclick="this.parentElement.remove();">&times</i></div>`;	
+								return htmlTag + out;
+							}
+							var tagList=savedOb[key].split(', ').reduce(tagValueEachItem,'');
+							inputOb.insertAdjacentHTML('afterend',tagList);
+						}
+						['Nguoigiao','Phutrach','Nguoinhan','Donvinhan'].forEach(tagValueEachInput);
+					}
+					Array.from(obDulieu.list.getElementsByClassName('classEditForm')).forEach(tagValueEachEditForm);
+				}
+
 				dataFilter=(item, filter)=>{
 					var giaoviec = item.giaoviec;
-					analyzeSidebarSearchTerm=()=>{switch(filter.sidebarSearchTerm){
+					analyzeSidebarSearchTerm=()=>{var gvChutri = giaoviec.chutri;switch(filter.sidebarSearchTerm){
 						case 'NAOC': return true;
-						case 'mygroup': return giaoviec.chutri.madonvi==mainData.user.madonvi;
-						case 'mine': return giaoviec.chutri.hoten==mainData.user.hoten || giaoviec.nguoinhan.hoten==mainData.user.hoten;
-						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':return giaoviec.chutri.madonvi==filter.sidebarSearchTerm;
+						case 'mygroup': 
+							return gvChutri.madonvi.indexOf(mainData.user.madonvi)>-1||giaoviec.donvi.madonvi.indexOf(mainData.user.madonvi)>-1;
+						case 'mine': return gvChutri.hoten==mainData.user.hoten || giaoviec.nguoinhan.hoten==mainData.user.hoten;
+						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':
+							return gvChutri.madonvi.indexOf(filter.sidebarSearchTerm)>-1||giaoviec.donvi.madonvi.indexOf(filter.sidebarSearchTerm)>-1;
 						case 'Duan': return giaoviec.duan==filter.sidebarSearchTx;
 						default: return true;}}
 					analyzeMainSearchTerm=(isolatedItem,lastResult)=>{var t=typeof isolatedItem;
@@ -593,6 +685,7 @@
 			sList.map((s,sInd)=>{cList[sInd].toggle('hidden',s);});
 		}
 		taskContentEditToggle=(p)=>{p.elm=p.elm.parentElement.parentElement.nextElementSibling;p.elm.classList.toggle('hidden',p.force);logF(taskContentSetUI,p);}
+		taskStateEditToggle=(p)=>{p.elm=p.elm.parentElement.parentElement.nextElementSibling;p.elm.classList.toggle('hidden',p.force);}
 	</script>
 	<script description="mainUI">
 		var obMain={lastSolieuState:false}, obMainKeyList=['e','content','tieude','subSidebar','searchBar','solieu'];
@@ -649,7 +742,7 @@
 		  	logE('getList:'+url);logF(overlayShowSpinner);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
 		      logE('getList Ok:');
-		      if(mainData.hash==response.hash){logE('already loaded content! - data OK'); logF(memToUi);logF(overlayHiddenAll);return;}
+		      if(mainData.hash.length>0&&mainData.hash==response.hash){logE('already loaded content! - data OK'); logF(memToUi);logF(overlayHiddenAll);return;}
 
 		      var values=mapJsonValue(response.header,decompressSheetValues(response.values));
 		      mainData.hash=response.hash;logE('MainHash:'+mainData.hash);
@@ -662,7 +755,7 @@
 		    },(er)=>alertEr('GasApiError+work',er));
 		}
 		
-		memToUi=()=>{logE('sidebarAddGroup()');sidebarAddGroup(mainData.congviecList);logF(initAutoDuan);logF(loadStaffList)}
+		memToUi=()=>{logE('sidebarAddGroup()');sidebarAddGroup(mainData.congviecList);logF(initAutoDuan);logF(loadStaffList);}
 
 		loadStaffList=()=>{
 			if(staffListReady) return;
@@ -681,18 +774,25 @@
 		staffGrouping=(items)=>{
 			var names={}, idxs={};
 			items.forEach((item,idx)=>{
-				var madonvi=item.madonvi, machucvu=item.machucvu, isBGDKB = madonvi=='BGDKB';
+				var madonvi=item.madonvi, machucvu=item.machucvu, isBGDKB = madonvi=='BGDKB', isVPKB = madonvi=='VPKB', isBGDC = madonvi=='BGDC';
+				if(isBGDC) return;
 				if(!names[madonvi]) {names[madonvi]={};idxs[madonvi]={};}
 				var shiftCode=(isBGDKB)?3:1, key=(isBGDKB)?'NAOC':madonvi, list=names[madonvi], listId=idxs[madonvi], canboCode=machucvu>>shiftCode;
 				
 				if(!list.Nguoigiao) {list.Nguoigiao=[]; listId.Nguoigiao=[];} 
-				if(canboCode > 0) {list.Nguoigiao.push(item.hoten); listId.Nguoigiao.push(idx);}
+				if(canboCode > 0) {list.Nguoigiao.push(item.hoten); listId.Nguoigiao.push(idx);}//can bo truong + pho
+				['Nguoikhongphe','Nguoipheduyet'].forEach((key,keyIdx)=>{if(!list[key]){list[key]=list.Nguoigiao;listId[key]=listId.Nguoigiao;}});
 				if(!list.Phutrach) {list.Phutrach=[]; listId.Phutrach=[];} 
-				if(canboCode&1 > 0) {list.Phutrach.push(item.hoten); listId.Phutrach.push(idx);}
-				if(isBGDKB) {logE(obSidebar.origin)
-					if(!(list.Donvinhan)) {listId.Donvinhan=(list.Donvinhan=obSidebar.origin[1].i).map((iged,igIdx)=>igIdx);list.Nguoinhan=[];listId.Nguoinhan=[]} }
-				else {if(!(list.Donvinhan)) {list.Donvinhan=[item.donvi]; listId.Donvinhan=[0]};
-					if(canboCode==0) {if(!list.Nguoinhan){list.Nguoinhan=[];listId.Nguoinhan=[];}list.Nguoinhan.push(item.hoten);listId.Nguoinhan.push(idx)}};
+				if(canboCode&1 > 0) {list.Phutrach.push(item.hoten); listId.Phutrach.push(idx);}//can bo pho
+
+				// neu trong bgd: donvinhan-6doi,nguoinhan-6doi
+				// neu trong VP: donvinhan-6doi,nguoinhan-vp
+				// neu trong doi: donvinhan-doi,nguoinhan-nhanvien
+				if(!(list.Donvinhan)) listId.Donvinhan=(list.Donvinhan=(isBGDKB||isVPKB)?obSidebar.origin[1].i:[item.donvi]).map((iged,igIdx)=>igIdx);
+				
+				if(!list.Nguoinhan) {list.Nguoinhan=[];listId.Nguoinhan=[];}
+				['CapnhatNguoithuchien','Nguoihoanthanh','Nguoixintamdung'].forEach((key,keyIdx)=>{if(!list[key]){list[key]=list.Nguoinhan;listId[key]=listId.Nguoinhan;}});
+				if(canboCode==0) {[list,names['BGDKB']].forEach(l=>l.Nguoinhan.push(item.hoten));[listId,idxs['BGDKB']].forEach(l=>l.Nguoinhan.push(idx));}
 				
 			});
 			return {names:names,idxs:idxs};
@@ -708,25 +808,24 @@
 			obSidebar.data.push(logO(adaptingGroup(cvList)));
 			logF(backupSidebarData);sidebarPopulateContent();sidebarItemClick(obSidebar.active)};
 
-		// sidebar add item
+		
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
 			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
-			var vals=[], idxs=[], idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
-			idElmList.forEach((k,idx)=>{var elm=p.elm.form[k+ext]; vals[idx]=elm.value;if(idx<4) idxs[idx]=elm.nextElementSibling?elm.nextElementSibling.value:-1});
+			var idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
+			const {vals,idxs}=macroTagActiveGetValues(idElmList,ext,p,4);
 
-			var staffGrIdx=mainData.staff.idxs[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
-			var selPeopleIdxs=idxs.map((item,itIdx)=>item>-1?staffGrIdx[idElmList[itIdx].replace('id','')][item]:-1);
-
-			var ngaygiao=formatDateForId(new Date(),1), thoihan=(vals[5].length>0)?formatFormDate(vals[5].split('-'),1):undefined;
-			var queryData={timestamp:ngaygiao,id:{},
-				nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
-				giaoviec:{ngaygiao:getDateJSON(ngaygiao),
-					nguoigiao:getPeopleJSON(vals[0],selPeopleIdxs[0]),
-					chutri:getPeopleJSON(vals[1],selPeopleIdxs[1]),donvi:vals[2],
-					nguoinhan:getPeopleJSON(vals[3],selPeopleIdxs[3]),
+			var homnay=getToday(), thoihan=(vals[5].length>0)?formatFormDate(vals[5].split('-'),1):undefined;
+			var queryData={id:{},
+				giaoviec:{ngaygui:homnay,  // 04/10/2020
+					nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
+					nguoigiao:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
+					chutri:idxs[1].length==0?getPersonJSON(vals[1]):getStaffJSON(idxs[1]),donvi:idxs[2].length==0?getDonvinhanJSON(vals[2]):getDonvinhanListJSON(idxs[2]),//{ten:vals[2],madonvi:'TBTTDD'}
+					nguoinhan:idxs[3].length==0?getPersonJSON(vals[3]):getStaffJSON(idxs[3]),
 					duan:vals[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:vals[6],daydu:vals[7]}};
 			
+			if(action=='create') queryData.giaoviec.ngaygiao = getDateJSON(homnay); // {full:'04/10/2020',short:'04/10'}
+
 			var url=`${appscriptConfig.workUrl}?action=${action}&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE(action+':'+url);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
@@ -744,18 +843,46 @@
 			var item=mainData.congviecList[p.index];
 			const giaoviecSubkey=['hoten','hoten','hoten','full'], noidungKey=['tomtat','daydu'];
 			var gv=['nguoigiao','chutri','nguoinhan','thoihan'].map((k,idx)=>
-				{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=3?v:formatFormDate(v.split('/'),'-')});
+				{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=3?'':(v==undefined?v:formatFormDate(v.split('/'),'-'))});
 			tryLoop(['idNguoigiao','idPhutrach','idNguoinhan','idNgayYeucau'],(k,idx)=>{p.elm[k+p.index].value=gv[idx]});
 			tryLoop(['idTencongviec','idNoidungchitiet'],(k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
 		}
+		dataUpdateStateTask=(p)=>{
+			p.elm.disabled=true;
+			var pos=p.index+3,ext = p.index, idElmList=['idCapnhatNguoithuchien','idTinhtrangCongviec'];
+			const {vals,idxs,hiddenValue}=macroTagActiveGetValues(idElmList,ext,p,1,'editFormLastData'+ext);
+			var lastData = JSON.parse(hiddenValue), today = getTodayJSON();
+
+			var queryData={
+				thuchien:{ok:1, nguoigui:{hoten:lastData.nguoigui.hoten+'\n'+mainData.user.hoten,maAcv:lastData.nguoigui.maAcv+'\n'+mainData.user.maAcv},
+					ngaygui:{full:lastData.ngaygui.full+'\n'+today.full, short:lastData.ngaygui.short+'\n'+today.short},
+					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],-1,lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
+					tinhtrang:{ noidung:lastData.tinhtrang.noidung+'\n'+vals[1]}}};
+			
+			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
+		  	logE('edit:'+url);
+		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
+		      switch(response.action) {
+		      	case 'edit': alert('Đã sửa công việc xong!');break;
+		      	default: alert('Không xác định công việc, debug:'+JSON.stringify(response));
+		      }
+		      logF(dataToMem);
+		      p.elm.disabled=false;
+		      idElmList.forEach((k,idx)=>p.elm.form[k+ext].value = '');
+		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
+		}
 		dataSubmitTask=(p)=>{
-			var vals = [],ext = p.index, keySelect=p.state==0?['idNguoithuchien','idKetquathuchien']:['idNguoitamdung','idLydotamdung'];
-			keySelect.forEach((k,idx)=>{vals[idx]=p.elm.form[k+ext].value});
+			var keySelect=p.state==0?['idNguoihoanthanh','idKetquahoanthanh']:['idNguoixintamdung','idLydotamdung'];
+			const {vals,idxs}=macroTagActiveGetValues(keySelect,p.index,p,1);
 			
 			Array.from(document.getElementsByClassName('pheduyet')).forEach((submitBtn)=>{submitBtn.disabled=true});
-			var thuchienData=()=>({thuchien:{ok:1,ngayhoanthanh:getDateJSON(formatDateForId(new Date(),1)),nguoithuchien:getPeopleJSON(vals[0]),ketqua:vals[1],pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
-			var tamdungData=()=>({tamdung:{ok:1,ngayxintamdung:getDateJSON(formatDateForId(new Date(),1)),nguoixintamdung:getPeopleJSON(vals[0]),lydo:vals[1],pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
-			var queryData=p.state==0?thuchienData():tamdungData();
+			var hoanthanhData=()=>({hoanthanh:{ok:1,nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},ngayhoanthanh:getTodayJSON(),
+				nguoihoanthanh:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
+				ketqua:vals[1],pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
+			var tamdungData=()=>({tamdung:{ok:1,nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},ngayxintamdung:getTodayJSON(),
+				nguoixintamdung:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
+				lydo:vals[1],pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
+			var queryData=p.state==0?hoanthanhData():tamdungData();
 			var pos = p.index+3;
 			
 			logE(queryData);
@@ -770,12 +897,13 @@
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		dataConfirmTask=(p)=>{
-			var vals = [],ext = p.index, keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
-			keySelect.forEach((k,idx)=>{vals[idx]=p.elm.form[k+ext].value});
-			
+			var keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
+			const {vals,idxs}=macroTagActiveGetValues(keySelect,p.index,p,1);
+
 			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
-			var pheduyetData={ok:(2-p.state),ngaypheduyet:getDateJSON(formatDateForId(new Date(),1)),nguoipheduyet:getPeopleJSON(vals[0]),noidung:vals[1]};
-			var tinhtrang=(pheduyetData.ok==2?'Từ chối yêu cầu,':'')+(p.source=='thuchien'?'Hoàn thành':'Tạm dừng');
+			var pheduyetData={ok:(2-p.state),nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
+				ngaypheduyet:getTodayJSON(),nguoipheduyet:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),noidung:vals[1]};
+			var tinhtrang=(pheduyetData.ok==2?'Từ chối yêu cầu,':'')+(p.source=='hoanthanh'?'Hoàn thành':'Tạm dừng');
 			var queryData={}; queryData[p.source]={pheduyet:pheduyetData}; queryData.tinhtrang=tinhtrang;
 			var pos = p.index+3;
 
@@ -791,10 +919,10 @@
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		dataResumeTask=(p)=>{
-			var thuchienData=()=>({tinhtrang:'Đang thực hiện',thuchien:{ok:'',ngayhoanthanh:getDateJSON(''),nguoithuchien:getPeopleJSON(''),ketqua:''}})
-			var tamdungData=()=>({tinhtrang:'Đang thực hiện',tamdung:{ok:'',ngayxintamdung:getDateJSON(''),nguoixintamdung:getPeopleJSON(''),lydo:''}})
-			var pheduyetData={ok:'',ngaypheduyet:getDateJSON(''),nguoipheduyet:getPeopleJSON(''),noidung:''};
-			var queryData=(p.source=='thuchien')?thuchienData():tamdungData();queryData[p.source].pheduyet=pheduyetData;
+			var hoanthanhData=()=>({tinhtrang:'Đang thực hiện',hoanthanh:{ok:'',nguoigui:{hoten:'',maAcv:''},ngayhoanthanh:getDateJSON(''),nguoihoanthanh:getPersonJSON(''),ketqua:''}})
+			var tamdungData=()=>({tinhtrang:'Đang thực hiện',tamdung:{ok:'',nguoigui:{hoten:'',maAcv:''},ngayxintamdung:getDateJSON(''),nguoixintamdung:getPersonJSON(''),lydo:''}})
+			var pheduyetData={ok:'',nguoigui:{hoten:'',maAcv:''},ngaypheduyet:getDateJSON(''),nguoipheduyet:getPersonJSON(''),noidung:''};
+			var queryData=(p.source=='hoanthanh')?hoanthanhData():tamdungData();queryData[p.source].pheduyet=pheduyetData;
 			var pos = p.index+3;
 
 			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
@@ -808,6 +936,18 @@
 		      logF(dataToMem);
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
+
+
+		macroTagActiveGetValues=(keyList,extKey,p, numOfSelectedIdxs,hiddenInputId)=>{var vals = [], idxs = [];
+			keyList.forEach((k,idx)=>{var elm=p.elm.form[k+extKey];vals[idx]=p.elm.form[k+extKey].value;
+				if(idx<numOfSelectedIdxs){
+					var tempTagActive=Array.from(elm.parentElement.getElementsByClassName(k.replace('id','class')+'TagActive'));
+					idxs[idx]=tempTagActive.map(elm=>(parseInt(elm.id.replace('tagActive',''))));
+				}
+			});
+			return {vals:vals,idxs:idxs,hiddenValue:p.elm.form[hiddenInputId].value};
+		}
+
 	</script>
 	<script description="dataPrototype">
 		User=(p)=>{var thisOb=this;['hoten','email','maAcv','uid','rowIdx','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
@@ -825,8 +965,8 @@
 					chutri:{id:'',rowIdx:'',ten:'',email:'',chucdanh:'',donvi:''},
 					thoihan:{full:'',short:''},
 				},
-				thuchien:{
-					nguoithuchien:{id:'',rowIdx:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
+				hoanthanh:{
+					nguoihoanthanh:{id:'',rowIdx:'',hoten:'',ten:'',email:'',chucdanh:'',donvi:'',img:''},
 					ketqua:'',
 					ghichu:'',
 				}
@@ -848,9 +988,9 @@
 					chutri:{id:'',rowIdx:'',hoten:'Nguyen Thuong Hien',ten:'Hien',email:'',chucdanh:'',donvi:''},							
 					thoihan:{full:'02/05/2020',short:'02/05'},
 				},
-				thuchien:{
+				hoanthanh:{
 					ngayhoanthanh:{short:'03/03',full:'03/03/2020'},
-					nguoithuchien:{id:'',rowIdx:'',hoten:'Tran Quoc Hoan',ten:'Hoan',email:'',chucdanh:'',donvi:'',img:''},
+					nguoihoanthanh:{id:'',rowIdx:'',hoten:'Tran Quoc Hoan',ten:'Hoan',email:'',chucdanh:'',donvi:'',img:''},
 					ketqua:'May tinh ghi am:OK\nTinh trang ghi am:OK\nHe thong tong dai:OK',
 					pheduyet:{
 						ngaypheduyet:{short:'03/03',full:'03/03/2020'},
@@ -903,6 +1043,7 @@
 		var appscriptConfig = {
 		  userUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
 		  workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
+		  // workUrl:'https://script.google.com/macros/s/AKfycby_LfQmKOnJncPl5ccreEOomj4O34Rl6-GH88RLbnobijv8YVc/exec'//Debug
 		}
 		callGasApi=(url,isJson)=>new Promise(dataCb=>{fetch(url).then(r=>(r.ok)?isJson?r.json():r.blob():alertEr(NetEr,'GasApi')).then(dataCb).catch(er=>alertEr(FetchEr,er));})
 		gasApiCb=data=>new Promise((dataCb,errorCb)=>(data.status==false||data.message.error != undefined)?errorCb(data.message):dataCb(data.message))
@@ -915,12 +1056,37 @@
 		formatFormDate=(formDateSplitted,delimiter)=>mergeStr(formDateSplitted[0])(formDateSplitted[1])(formDateSplitted[2])(delimiter);
 		const mergeStr=y=>m=>d=>delimiter=>(delimiter == undefined)?(y + m + d):(typeof delimiter=='string')?d+delimiter+m+delimiter+y:d + '/' + m + '/' + y;
 
-		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>2 && ns[0].length>3)?lastWord(name):name}
-		lastWord=(word)=>word.slice(word.lastIndexOf(' '));
+		getToday=()=>formatDateForId(new Date(),1);
+		getTodayJSON=()=>getDateJSON(getToday());
 
-		getPeopleJSON=(name,staffIdxIfExist)=>{
+		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>1 && ns[0].search(/(Mr)||(Mrs)||(Ms)/i)>-1)?lastWord(name):name}
+		lastWord=(word)=>word.slice(word.lastIndexOf(' ')+1);
+
+		lookForMadonvi=(tenDonvi)=>obSidebar.data[1].i.reduce((out,item,idx)=>(out==item)?obSidebar.data[1].c[idx]:out,tenDonvi);
+
+		getDonvinhanListJSON=(donviIdxList)=>{
+			if(donviIdxList.length==0) throw 'Id list is empty - Donvinhan';
+			if(donviIdxList.length==1) return getDonvinhanJSON(null,donviIdxList[0]);
+			var tenDonvi = '', maDonvi = '';
+			donviIdxList.forEach((donviIdx,idx)=>{ tenDonvi+=((idx>0?', ':'')+obSidebar.data[1].i[donviIdx]); maDonvi+=((idx>0?', ':'')+obSidebar.data[1].c[donviIdx])});//PAUSE
+			return{ten:tenDonvi,madonvi:maDonvi}
+		}
+		getDonvinhanJSON=(name,donviIdxIfExist)=>{
+			var viewState = mainData.view.state;
+			var tenDonvi = donviIdxIfExist>-1?(mainData.staff.names[viewState=='NAOC'?'BGDKB':viewState].Donvinhan[donviIdxIfExist]):name;
+			var maDonvi = lookForMadonvi(tenDonvi);
+			return {ten:tenDonvi,madonvi:maDonvi==tenDonvi?'--':maDonvi}
+		}
+		getStaffJSON=(staffIdxList, appendedOb)=>{
+			if(staffIdxList.length==0) throw 'Id list is empty - Staff';
+			var keyList=['hoten','ten','maAcv','madonvi'],tpOb={};// pause adding nameshort
+			staffIdxList.forEach(staffId=>{var staffOb=mainData.staffList[staffId];keyList.forEach((k,idx)=>{tpOb[k]=tpOb[k]?tpOb[k]:[];tpOb[k].push(idx==1?nameShort(staffOb.hoten):staffOb[k])});});
+			return keyList.reduce((out,k)=>{var tpOut=tpOb[k].join(', '); out[k]=appendedOb?(appendedOb[k]+'\n'+tpOut):tpOut; return out;},{});
+		}
+		getPersonJSON=(name,staffIdxIfExist,appendedOb)=>{
 			var staffItem = staffIdxIfExist>-1?mainData.staffList[staffIdxIfExist]:{maAcv:'',madonvi:''};
-			return {hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
+			return appendedOb?{hoten:appendedOb.hoten+'\n'+name,ten:appendedOb+'\n'+nameShort(name),maAcv:appendedOb+'\n'+staffItem.maAcv,madonvi:appendedOb+'\n'+staffItem.madonvi}:
+				{hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
 		}
 		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:{full:'',short:''}
 
@@ -942,8 +1108,10 @@
   	initAutoStaffList=()=>{
   		logE('is staff list ready? => '+staffListReady);
   		if(!staffListReady) return;
-  		var staffGr=mainData.staff.names[mainData.view.state=='NAOC'?'BGDKB':mainData.view.state];
-  		Object.keys(staffGr).forEach(key=>tryLoop(['class'+key],(clForAuto)=>elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key]))));
+  		var viewState=mainData.view.state=='NAOC'?'BGDKB':mainData.view.state, staffGr=mainData.staff.names[viewState];
+  		Object.keys(staffGr).forEach((key,kIdx)=>tryLoop(['class'+key],(clForAuto)=>
+  			elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key],onInputTagAdded,{clName:clForAuto,viewState:viewState,sectionKey:key}))));
+  		logF(parseTagsForInput);
   	}
   	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
   </script>
