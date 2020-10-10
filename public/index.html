@@ -631,12 +631,19 @@
 						var formIndex=itemForm.id.replace('idGiaoviecForm','');
 						tagValueEachInput=(sectionKey)=>{var inputOb=itemForm['inputTag'+sectionKey+formIndex];var savedOb=JSON.parse(inputOb.value),key=sectionKey=='Donvinhan'?'ten':'hoten';
 							tagValueEachItem=(out,item,idx)=>{
-								searchForId=(out,itemName,idx)=>out==-1?(item==itemName?idx:-1):out;
-								var viewScope = viewState;
-								do{
-									var dataIdx=mainData.staff.names[viewScope][sectionKey].reduce(searchForId,-1);
-									if(dataIdx==-1) {if(viewScope=='BGDKB') {logE(null,'Lỗi, không tìm thấy người này trong danh sách');break;} else viewScope='BGDKB';}
-								}while(dataIdx==-1);
+								tagSearchForId=(out,itemName,idx)=>out==-1?(item==itemName?idx:-1):out;
+								var nospaceItem = item.replace(' ','');
+								if(item.length==0||nospaceItem.length==0) return out;
+
+								var viewScope = viewState, nameList=mainData.staff.names;
+								var dataIdx=nameList[viewScope][sectionKey].reduce(tagSearchForId,-1);
+
+								if(dataIdx==-1) {
+									tagMaAcvLookup=(key)=>obSidebar.data[1].c.reduce((lastIdx,nxtScope)=>(lastIdx==-1)?nameList[viewScope=nxtScope][key].reduce(tagSearchForId,-1):lastIdx,-1);
+									dataIdx=tagMaAcvLookup(sectionKey);
+									
+									if(dataIdx==-1) {logE(null,'Lỗi, không tìm thấy người này trong danh sách: '+item);}
+								}
 
 								var staffId=mainData.staff.idxs[viewScope][sectionKey][dataIdx]; //[BGDKB][Donvinhan][0]
 								var htmlTag=`<a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="class${sectionKey}TagActive" id="tagActive${staffId}">${item}</a><i class="ptr" onclick="this.parentElement.remove();">&times</i></div>`;	
@@ -836,7 +843,7 @@
 		      }
 		      logF(dataToMem);
 		      p.elm.disabled=false;
-		      idElmList.forEach((k,idx)=>p.elm.form[k+ext].value = '');
+		      idElmList.forEach((k,idx)=>{p.elm.form[k+ext].value = ''; Array.from(p.elm.form.getElementsByClassName(k.replace('id','class')+'TagActive')).forEach(elm=>elm.parentElement.remove())});
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		taskContentSetUI=(p)=>{
@@ -856,7 +863,7 @@
 			var queryData={
 				thuchien:{ok:1, nguoigui:{hoten:lastData.nguoigui.hoten+'\n'+mainData.user.hoten,maAcv:lastData.nguoigui.maAcv+'\n'+mainData.user.maAcv},
 					ngaygui:{full:lastData.ngaygui.full+'\n'+today.full, short:lastData.ngaygui.short+'\n'+today.short},
-					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],-1,lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
+					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
 					tinhtrang:{ noidung:lastData.tinhtrang.noidung+'\n'+vals[1]}}};
 			
 			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
@@ -868,7 +875,7 @@
 		      }
 		      logF(dataToMem);
 		      p.elm.disabled=false;
-		      idElmList.forEach((k,idx)=>p.elm.form[k+ext].value = '');
+		      idElmList.forEach((k,idx)=>{p.elm.form[k+ext].value = ''; Array.from(p.elm.form.getElementsByClassName(k.replace('id','class')+'TagActive')).forEach(elm=>elm.parentElement.remove())});
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		dataSubmitTask=(p)=>{
@@ -945,7 +952,7 @@
 					idxs[idx]=tempTagActive.map(elm=>(parseInt(elm.id.replace('tagActive',''))));
 				}
 			});
-			return {vals:vals,idxs:idxs,hiddenValue:p.elm.form[hiddenInputId].value};
+			return hiddenInputId?{vals:vals,idxs:idxs,hiddenValue:p.elm.form[hiddenInputId].value}:{vals:vals,idxs:idxs};
 		}
 
 	</script>
@@ -1083,8 +1090,9 @@
 			staffIdxList.forEach(staffId=>{var staffOb=mainData.staffList[staffId];keyList.forEach((k,idx)=>{tpOb[k]=tpOb[k]?tpOb[k]:[];tpOb[k].push(idx==1?nameShort(staffOb.hoten):staffOb[k])});});
 			return keyList.reduce((out,k)=>{var tpOut=tpOb[k].join(', '); out[k]=appendedOb?(appendedOb[k]+'\n'+tpOut):tpOut; return out;},{});
 		}
-		getPersonJSON=(name,staffIdxIfExist,appendedOb)=>{
-			var staffItem = staffIdxIfExist>-1?mainData.staffList[staffIdxIfExist]:{maAcv:'',madonvi:''};
+		getPersonJSON=(name,appendedOb)=>{
+			var staffIdx = mainData.staffList.reduce((out,item,idx)=>(item.hoten==name)?idx:out,-1);
+			var staffItem = staffIdx>-1?mainData.staffList[staffIdx]:{maAcv:'',madonvi:''};
 			return appendedOb?{hoten:appendedOb.hoten+'\n'+name,ten:appendedOb+'\n'+nameShort(name),maAcv:appendedOb+'\n'+staffItem.maAcv,madonvi:appendedOb+'\n'+staffItem.madonvi}:
 				{hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
 		}
