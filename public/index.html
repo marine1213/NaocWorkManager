@@ -528,13 +528,13 @@
 							tempStateDetail+=splittedData.nguoigui.map((item,idx)=>
 										`<h5><b>Ngày cập nhật: ${splittedData.ngaygui[idx]}</b></h5>
 										<p><b>Người thực hiện: </b>${splittedData.nguoithuchien[idx]}</p>
-										<p><b>Nội dung chi tiết:</b>${splittedData.tinhtrang[idx]}</p>`
+										<p><b>Nội dung chi tiết: </b>${splittedData.tinhtrang[idx]}</p>`
 							).join('<br>');	
 						}catch(e){
 							logE(null,e);
 							tempStateDetail+=`<p><b>Người thực hiện: </b>${item.thuchien.nguoithuchien.hoten}</p>
 									<p><b>Ngày cập nhật: </b>${item.thuchien.ngaygui.full}</p>
-									<p><b>Nội dung chi tiết:</b></p>
+									<p><b>Nội dung chi tiết: </b></p>
 									<p>${item.thuchien.tinhtrang.split('\n').join('</p><p>')}</p>`;
 						}
 						return tempStateDetail;
@@ -861,10 +861,10 @@
 			var lastData = JSON.parse(hiddenValue), today = getTodayJSON();
 
 			var queryData={
-				thuchien:{ok:1, nguoigui:{hoten:lastData.nguoigui.hoten+'\n'+mainData.user.hoten,maAcv:lastData.nguoigui.maAcv+'\n'+mainData.user.maAcv},
-					ngaygui:{full:lastData.ngaygui.full+'\n'+today.full, short:lastData.ngaygui.short+'\n'+today.short},
+				thuchien:{ok:1, nguoigui:{hoten:appendLine(lastData.nguoigui.hoten,mainData.user.hoten),maAcv:appendLine(lastData.nguoigui.maAcv,mainData.user.maAcv)},
+					ngaygui:{full:appendLine(lastData.ngaygui.full,today.full), short:appendLine(lastData.ngaygui.short,today.short)},
 					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
-					tinhtrang:{ noidung:lastData.tinhtrang.noidung+'\n'+vals[1]}}};
+					tinhtrang:{noidung:appendLine(lastData.tinhtrang.noidung,vals[1]) }}};
 			
 			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE('edit:'+url);
@@ -1069,6 +1069,8 @@
 		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>1 && ns[0].search(/(Mr)||(Mrs)||(Ms)/i)>-1)?lastWord(name):name}
 		lastWord=(word)=>word.slice(word.lastIndexOf(' ')+1);
 
+		appendLine=(lastLine,nextLine)=>lastLine.length>0?lastLine+'\n'+nextLine:nextLine;
+
 		lookForMadonvi=(tenDonvi)=>obSidebar.data[1].i.reduce((out,item,idx)=>(out==item)?obSidebar.data[1].c[idx]:out,tenDonvi);
 
 		getDonvinhanListJSON=(donviIdxList)=>{
@@ -1093,7 +1095,7 @@
 		getPersonJSON=(name,appendedOb)=>{
 			var staffIdx = mainData.staffList.reduce((out,item,idx)=>(item.hoten==name)?idx:out,-1);
 			var staffItem = staffIdx>-1?mainData.staffList[staffIdx]:{maAcv:'',madonvi:''};
-			return appendedOb?{hoten:appendedOb.hoten+'\n'+name,ten:appendedOb+'\n'+nameShort(name),maAcv:appendedOb+'\n'+staffItem.maAcv,madonvi:appendedOb+'\n'+staffItem.madonvi}:
+			return appendedOb?{hoten:appendLine(appendedOb.hoten,name),ten:appendLine(appendedOb,nameShort(name)),maAcv:appendLine(appendedOb,staffItem.maAcv),madonvi:appendLine(appendedOb,staffItem.madonvi)}:
 				{hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
 		}
 		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:{full:'',short:''}
