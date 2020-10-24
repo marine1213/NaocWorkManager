@@ -79,6 +79,26 @@
 		p{margin: 2px 0px}
 		hr{margin: 5px}
 		label{color: black}
+		label.txWhite{color: white}
+
+		input[type="file"] {
+		    display: none;
+		}
+		.customFileUpload{border: 1px solid #ccc;display: inline-block;padding: 6px 12px;cursor: pointer;}
+		.flexFileUploadContainer{display: flex;flex-wrap: wrap; background-color: #e9d8f4;justify-content: space-evenly; align-items: baseline;}
+		.flexFileUploadContainer > div {  background-color: #58257b; margin: 10px;text-align: center;line-height: 15px;}
+
+		/*Credit to: https://stackoverflow.com/questions/40400094/set-a-close-icon-in-the-top-right-corner-of-an-image*/
+		.frameThumbnail{display: inline-block;position: relative;}
+		.closeOnTopThumbnail{position: absolute;top: -8px;right: -10px;}
+
+		.customFileItem{cursor: pointer;}
+		.flexThumbnailContainer{display: flex;flex-wrap: wrap;background-color: #e9d8f4;justify-content: flex-start;align-items: baseline;}
+		.flexThumbnailContainer > div {  background-color: #e9d8f4;width:80px;margin: 20px; text-align: center; }
+		/*background-color: #e9d8f4;*/
+
+		.flexPreviewContainer{display: flex;flex-wrap: wrap;justify-content: flex-start;align-items: baseline;}
+		.flexPreviewContainer > div {  width:80px;margin: 20px; text-align: center; }
 	</style>
 	
 </head>
@@ -185,7 +205,7 @@
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
     }
 
-    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param);logF(initAutoStaffList);};
+    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param);logF(initAutoStaffList);logF(onInitUploadEvent,'.fileUpload');};
 
     sidebarSearch=(p)=>{
     	var searchVal=p.elm.value.toUpperCase();
@@ -370,8 +390,39 @@
 								<div class="w3-col s12 w3-container">
 									<label for="idTencongviec">Tên công việc</label><input type="text" name="idTencongviec">
 								</div>
-								<div class="w3-col s12 w3-container">
+								<div class="w3-col s12 w3-container mb4p">
 									<label for="idNoidungchitiet">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet"></textarea>
+									<div class="w3-col s12 flexThumbnailContainer">
+										<!-- <div class="customFileItem">
+											<div class="frameThumbnail">
+												<img src="./icons/svg/753/753345.svg" class="closeOnTopThumbnail" onclick="this.parentElement.parentElement.remove();return false" width="20px">
+												<img width="80px" src="https://drive.google.com/thumbnail?authuser=0&sz=w80&id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp" onclick="window.open('https://drive.google.com/open?id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp')">
+											</div>
+											<label>Test</label>
+											<input type="text" class="hidden fileUploadedId">
+										</div> -->	
+									</div>
+									<div class="w3-col s12 fileUploadUI flexFileUploadContainer">
+										<div class="w3-col s12 m3">
+											<!-- Credit to:https://www.flaticon.com/free-icon/file_3143360 -->
+											<label for="fileUploadImg" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143360.svg" width="20px" class="m5p">Đính kèm ảnh
+											</label>
+											<input type="file" id="fileUploadImg" class="fileUploadOnce" accept="image/*" />
+										</div>
+										<div class="w3-col s12 m3">
+											<label for="fileUploadPdf" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143500.svg" width="20px" class="m5p">Đính kèm PDF
+											</label>
+											<input type="file" id="fileUploadPdf" class="fileUploadOnce" accept="application/pdf" />
+										</div>
+										<div class="w3-col s12 m3">
+											<label for="fileUploadAll" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143563.svg" width="20px" class="m5p">Đính kèm file khác
+											</label>
+											<input type="file" id="fileUploadAll" class="fileUploadOnce" />
+										</div>
+									</div>
 								</div>
 								<div class="w3-cell-row">
 									<div class="w3-cell w3-center" ><button class="w3-button w3-blue w97" type="button" onclick="logF(taskContentGetUI,{elm:this,index:-1})">Giao việc</button></div>
@@ -382,7 +433,7 @@
 					<!-- CongviecItem--see CongviecItem for more detail -->
 					
 				</ul>
-
+				<img src="">
 			</div>
 			<script description="listControl">
 				var obDulieu={};
@@ -400,26 +451,66 @@
 					var hoanthanhOk=item.hoanthanh.ok.length>0,hoanthanhPheduyetOk=(item.hoanthanh.pheduyet.ok.length>0&&hoanthanhPheduyetOkCode>0);
 					var tamdungOk=item.tamdung.ok.length>0,tamdungPheduyetOk=(item.tamdung.pheduyet.ok.length>0&&tamdungPheduyetOkCode>0);
 
+					fileUploadSnippet=(partName)=> `<div class="w3-col s12 flexThumbnailContainer">
+										<!-- <div class="customFileItem">
+											<div class="frameThumbnail">
+												<img src="./icons/svg/753/753345.svg" class="closeOnTopThumbnail" onclick="this.parentElement.parentElement.remove();return false" width="20px">
+												<img width="80px" src="https://drive.google.com/thumbnail?authuser=0&sz=w80&id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp" onclick="window.open('https://drive.google.com/open?id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp')">
+											</div>
+											<label>Test</label>
+											<input type="text" class="hidden fileUploadedId">
+										</div> -->	
+									</div>
+									<div class="w3-col s12 fileUploadUI flexFileUploadContainer">
+										<div class="w3-col s12 m3">
+											<!-- Credit to:https://www.flaticon.com/free-icon/file_3143360 -->
+											<label for="fileUploadImg${partName+index}" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143360.svg" width="20px" class="m5p">Đính kèm ảnh
+											</label>
+											<input type="file" id="fileUploadImg${partName+index}" class="fileUpload" accept="image/*" />
+										</div>
+										<div class="w3-col s12 m3">
+											<label for="fileUploadPdf${partName+index}" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143500.svg" width="20px" class="m5p">Đính kèm PDF
+											</label>
+											<input type="file" id="fileUploadPdf${partName+index}" class="fileUpload" accept="application/pdf" />
+										</div>
+										<div class="w3-col s12 m3">
+											<label for="fileUploadAll${partName+index}" class="customFileUpload fullw txWhite">
+												<img src="./icons/svg/3143/3143563.svg" width="20px" class="m5p">Đính kèm file khác
+											</label>
+											<input type="file" id="fileUploadAll${partName+index}" class="fileUpload" />
+										</div>
+									</div>`;
+
+					fileIdToElm=fileId=>`<div class="customFileItem"><img width="80px" src="${getThumbnailUrl(fileId[0])}" onclick="window.open('${getDriveUrl(fileId[0])}')"><label>${fileId[1]}</label></div>`;
+					fileStrExtracting=fileStr=>fileIdToElm(fileStr.split('?'));
+					getThumbnailBox=(fileIdString)=>fileIdString.length>0?`<div class="w3-col s12 flexPreviewContainer">${fileIdString.split(',').map(fileStrExtracting).join('')}</div>`:'';
+
 					var elmExtend=hoanthanhOk>0?(
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Hoàn thành</b></h4><p><b>Người thực hiện: </b>${item.hoanthanh.nguoihoanthanh.hoten}</p>
 						<p><b>Ngày hoàn thành: </b>${item.hoanthanh.ngayhoanthanh.full}</p>
-						<p><b>Kết quả thực hiện: </b></p><p>${item.hoanthanh.ketqua.split('\n').join('</p><p>')}</p></div>`
+						<p><b>Kết quả thực hiện: </b></p><p>${item.hoanthanh.ketqua.split('\n').join('</p><p>')}</p>
+						${getThumbnailBox(item.hoanthanh.files)}</div>`
 					+((hoanthanhPheduyetOk>0)?
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Phê duyệt Hoàn thành:</b></h4><p>
 						<p><b>Người phê duyệt: </b>${item.hoanthanh.pheduyet.nguoipheduyet.hoten}</p>
 						<p><b>Ngày phê duyệt: </b>${item.hoanthanh.pheduyet.ngaypheduyet.full}</p>
 						<p><b>Nội dung: </b> Kết quả ${hoanthanhPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
-						<p>${item.hoanthanh.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
+						<p>${item.hoanthanh.pheduyet.noidung.split('\n').join('</p><p>')}</p>
+						${getThumbnailBox(item.hoanthanh.pheduyet.files)}</div>`:'')):'';
 					elmExtend+=tamdungOk?(
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Tạm dừng</b></h4><p><b>Người xin tạm dừng: </b>${item.tamdung.nguoixintamdung.hoten}</p>
 						<p><b>Ngày xin tạm dừng: </b>${item.tamdung.ngayxintamdung.full}</p>
-						<p><b>Lý do tạm dừng: </b></p><p>${item.tamdung.lydo.split('\n').join('</p><p>')}</p></div>`
+						<p><b>Lý do tạm dừng: </b></p><p>${item.tamdung.lydo.split('\n').join('</p><p>')}</p>
+						${getThumbnailBox(item.tamdung.files)}</div>`
 					+((tamdungPheduyetOk)?
 						`<div class="w3-col s12 m6"><p class="pLR7px"></p><h4><b>Phê duyệt Tạm dừng:</b></h4><p>
 						<p><b>Người phê duyệt: </b>${item.tamdung.pheduyet.nguoipheduyet.hoten}</p>
 						<p><b>Ngày phê duyệt: </b>${item.tamdung.pheduyet.ngaypheduyet.full}</p>
 						<p><b>Nội dung: </b> Yêu cầu tạm dừng ${tamdungPheduyetOkCode==2?'không':'đã'} được phê duyệt </p>
-						<p>${item.tamdung.pheduyet.noidung.split('\n').join('</p><p>')}</p></div>`:'')):'';
+						<p>${item.tamdung.pheduyet.noidung.split('\n').join('</p><p>')}</p>
+						${getThumbnailBox(item.tamdung.pheduyet.files)}</div>`:'')):'';
 
 					var hoanthanhBtns=
 					`<div class="nhanvienCtrl hidden"><div class="w3-cell-row">
@@ -430,16 +521,16 @@
 						<form class="w3-row hidden hoanthanhForm" autocomplete="off">
 							<div class="w3-col s8"><label>Người hoàn thành</label><input class="inputTag hidden" id="inputTagNguoihoanthanh${index}" value='${JSON.stringify(item.hoanthanh.nguoihoanthanh)}'>
 							<input type="text" name="idNguoihoanthanh${index}" class="classNguoihoanthanh classFastMode"></div>
-							<div class="w3-col s11"><label>Kết quả thực hiện</label><textarea class="materialize-textarea" name="idKetquahoanthanh${index}"></textarea></div>
+							<div class="w3-col s12"><label>Kết quả thực hiện</label><textarea class="materialize-textarea" name="idKetquahoanthanh${index}"></textarea>${fileUploadSnippet('Hoanthanh')}</div>
 							<div class="w3-cell-row">
-							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:0})" type="button">Gửi đi phê duyệt</button></div></div>
+							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet m5p" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:0})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
 						<form class="w3-row hidden tamdungForm" autocomplete="off">
 							<div class="w3-col s8"><label>Người xin tạm dừng</label><input class="inputTag hidden" id="inputTagNguoixintamdung${index}" value='${JSON.stringify(item.tamdung.nguoixintamdung)}'>
 							<input type="text" name="idNguoixintamdung${index}" class="classNguoixintamdung classFastMode"></div>
-							<div class="w3-col s11"><label>Lý do tạm dừng</label><textarea class="materialize-textarea" name="idLydotamdung${index}"></textarea></div>
+							<div class="w3-col s12"><label>Lý do tạm dừng</label><textarea class="materialize-textarea" name="idLydotamdung${index}"></textarea>${fileUploadSnippet('Tamdung')}</div>
 							<div class="w3-cell-row">
-							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:1})" type="button">Gửi đi phê duyệt</button></div></div>
+							<div class="w3-cell w3-center"><button class="w3-button w3-theme pheduyet m5p" onclick="logF(dataSubmitTask,{elm:this,index:${index},state:1})" type="button">Gửi đi phê duyệt</button></div></div>
 						</form>
 					</div></div>`;
 					var source=hoanthanhOk?'hoanthanh':'tamdung', btnStateColor=hoanthanhOk?'w3-blue':'w3-orange', stateTx=hoanthanhOk?'hoàn thành':'tạm dừng';
@@ -452,23 +543,23 @@
 						<form class="w3-row hidden" autocomplete="off">
 							<div class="w3-col s8"><label>Người phê duyệt</label><input class="inputTag hidden" id="inputTagNguoikhongphe${index}">
 							<input type="text" name="idNguoikhongphe${index}" class="classNguoikhongphe classFastMode"></div>
-							<div class="w3-col s11"><label>Vấn đề còn tồn tại</label><textarea class="materialize-textarea" name="idNoidungkophe${index}"></textarea></div>
+							<div class="w3-col s12"><label>Vấn đề còn tồn tại</label><textarea class="materialize-textarea" name="idNoidungkophe${index}"></textarea>${fileUploadSnippet('Khongphe')}</div>
 							<div class="w3-cell-row">
-							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:0,source:'${source}'})" type="button">Xác nhận</button></div></div>
+							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} m5p pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:0,source:'${source}'})" type="button">Xác nhận</button></div></div>
 						</form>
 						<form class="w3-row hidden" autocomplete="off">
 							<div class="w3-col s8"><label>Người phê duyệt</label><input class="inputTag hidden" id="inputTagNguoipheduyet${index}">
 							<input type="text" name="idNguoipheduyet${index}" class="classNguoipheduyet classFastMode"></div>
-							<div class="w3-col s11"><label>Nội dung phê duyệt</label><textarea class="materialize-textarea" name="idNoidungphe${index}"></textarea></div>
+							<div class="w3-col s12"><label>Nội dung phê duyệt</label><textarea class="materialize-textarea" name="idNoidungphe${index}"></textarea>${fileUploadSnippet('Pheduyet')}</div>
 							<div class="w3-cell-row">
-							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:'${source}'})" type="button">Xác nhận</button></div></div>
+							<div class="w3-cell w3-center"><button class="w3-button ${btnStateColor} m5p pheduyet" onclick="logF(dataConfirmTask,{elm:this,index:${index},state:1,source:'${source}'})" type="button">Xác nhận</button></div></div>
 						</form>
 					</div></div>`;
 					var tieptucBtns=
 					`<div class="w3-cell-row nhanvienCtrl hidden">
 						<div class="w3-cell w3-center"><button class="w3-button w3-theme w97 pheduyet" onclick="logF(dataResumeTask,{elm:this,index:${index},source:'${source}'});">Tiếp tục Công việc</button></div>
-					</div>
-					`;
+					</div>`;
+					
 					var stateExtend=(hoanthanhOk>0?(hoanthanhPheduyetOk>0?tieptucBtns:pheduyetBtns):
 						(tamdungOk>0?(tamdungPheduyetOk>0?tieptucBtns:pheduyetBtns):hoanthanhBtns));
 
@@ -502,11 +593,14 @@
 								</div>
 								<div class="w3-col s12 w3-container">
 									<label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea>
+									${fileUploadSnippet('SuaCongviec')}
 								</div>
 								<div class="w3-cell-row">
 									<div class="w3-cell w3-center" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentGetUI,{elm:this,index:${index}})">Xác nhận sửa</button></div>
 								</div>
 							</form>`;
+					
+					var imageMainContent = getThumbnailBox(item.noidung.files);
 
 					var elmMainContent = `<p class="pLR7px"><h4><b>Giao việc</b></h4></p>
 								<p><b>Người giao: </b>${item.giaoviec.nguoigiao.hoten}</p>
@@ -517,25 +611,27 @@
 								<p><b>Yêu cầu hoàn thành: </b>${item.giaoviec.thoihan.full}</p>
 								${item.giaoviec.duan.length>0?`<p><b>Thuộc dựa án: </b>${item.giaoviec.duan}</p>`:''}
 								<p><b>Nội dung chi tiết:</b></p>
-								<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>`;
-
+								<p>${item.noidung.daydu.split('\n').join('</p><p>')}</p>
+								${imageMainContent}`;
 					
 					getElmStateDetail=()=>{
 						var tempStateDetail = '<p class="pLR7px"><h4><b>Tình trạng công việc (Báo cáo bổ sung)</b></h4></p>';
 						try{
-							var thuchienSubKeys=['hoten','hoten','full','noidung'], thuchienKeys=['nguoigui','nguoithuchien','ngaygui','tinhtrang']
+							var thuchienSubKeys=['hoten','hoten','full','noidung','noidung'], thuchienKeys=['nguoigui','nguoithuchien','ngaygui','tinhtrang','files']
 							var splittedData=thuchienKeys.reduce((out,k,idx)=>{if(k!='ok') out[k]=item.thuchien[k][thuchienSubKeys[idx]].split('\n'); return out;},{});
 							tempStateDetail+=splittedData.nguoigui.map((item,idx)=>
 										`<h5><b>Ngày cập nhật: ${splittedData.ngaygui[idx]}</b></h5>
 										<p><b>Người thực hiện: </b>${splittedData.nguoithuchien[idx]}</p>
-										<p><b>Nội dung chi tiết: </b>${splittedData.tinhtrang[idx]}</p>`
+										<p><b>Nội dung chi tiết: </b>${splittedData.tinhtrang[idx]}</p>
+										${getThumbnailBox(splittedData.files[idx])}`
+										// Them image vao day
 							).join('<br>');	
 						}catch(e){
 							logE(null,e);
 							tempStateDetail+=`<p><b>Người thực hiện: </b>${item.thuchien.nguoithuchien.hoten}</p>
 									<p><b>Ngày cập nhật: </b>${item.thuchien.ngaygui.full}</p>
 									<p><b>Nội dung chi tiết: </b></p>
-									<p>${item.thuchien.tinhtrang.split('\n').join('</p><p>')}</p>`;
+									<p>${item.thuchien.tinhtrang.noidung.split('\n').join('</p><p>')}</p>`;
 						}
 						return tempStateDetail;
 					}
@@ -549,9 +645,10 @@
 								</div>
 								<div class="w3-col s12 w3-container">
 									<label for="idTinhtrangCongviec${index}">Tình trạng công việc</label><input type="text" id="idTinhtrangCongviec${index}"></textarea>
+									${fileUploadSnippet('CapnhatTinhtrang')}
 								</div>
 								<div class="w3-cell-row">
-									<div class="w3-cell w3-center"><button class="w3-button w3-green w97" type="button" onclick="logF(dataUpdateStateTask,{elm:this,index:${index}})">Xác nhận sửa</button></div>
+									<div class="w3-cell w3-center"><button class="w3-button w3-green w97" type="button" onclick="logF(dataUpdateStateTask,{elm:this,index:${index}})">Xác nhận</button></div>
 								</div>
 							</form>`;
 
@@ -632,14 +729,15 @@
 						tagValueEachInput=(sectionKey)=>{var inputOb=itemForm['inputTag'+sectionKey+formIndex];var savedOb=JSON.parse(inputOb.value),key=sectionKey=='Donvinhan'?'ten':'hoten';
 							tagValueEachItem=(out,item,idx)=>{
 								tagSearchForId=(out,itemName,idx)=>out==-1?(item==itemName?idx:-1):out;
-								var nospaceItem = item.replace(' ','');
+								var nospaceItem = item.replace(/ /g,'');
 								if(item.length==0||nospaceItem.length==0) return out;
 
 								var viewScope = viewState, nameList=mainData.staff.names;
 								var dataIdx=nameList[viewScope][sectionKey].reduce(tagSearchForId,-1);
 
 								if(dataIdx==-1) {
-									tagMaAcvLookup=(key)=>obSidebar.data[1].c.reduce((lastIdx,nxtScope)=>(lastIdx==-1)?nameList[viewScope=nxtScope][key].reduce(tagSearchForId,-1):lastIdx,-1);
+									const donviList = ['BGDKB','TBTTDD','CDD','BTSD','MTKB','VPKB','CHKNS'];
+									tagMaAcvLookup=(key)=>donviList.reduce((lastIdx,nxtScope)=>(lastIdx==-1)?nameList[viewScope=nxtScope][key].reduce(tagSearchForId,-1):lastIdx,-1);
 									dataIdx=tagMaAcvLookup(sectionKey);
 									
 									if(dataIdx==-1) {logE(null,'Lỗi, không tìm thấy người này trong danh sách: '+item);}
@@ -821,6 +919,7 @@
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
 			var idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
 			const {vals,idxs}=macroTagActiveGetValues(idElmList,ext,p,4);
+			var fileList=getFileUploadedIdList(p);
 
 			var homnay=getToday(), thoihan=(vals[5].length>0)?formatFormDate(vals[5].split('-'),1):undefined;
 			var queryData={id:{},
@@ -829,13 +928,13 @@
 					nguoigiao:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
 					chutri:idxs[1].length==0?getPersonJSON(vals[1]):getStaffJSON(idxs[1]),donvi:idxs[2].length==0?getDonvinhanJSON(vals[2]):getDonvinhanListJSON(idxs[2]),//{ten:vals[2],madonvi:'TBTTDD'}
 					nguoinhan:idxs[3].length==0?getPersonJSON(vals[3]):getStaffJSON(idxs[3]),
-					duan:vals[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:vals[6],daydu:vals[7]}};
+					duan:vals[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:vals[6],daydu:vals[7],files:fileList}};
 			
 			if(action=='create') queryData.giaoviec.ngaygiao = getDateJSON(homnay); // {full:'04/10/2020',short:'04/10'}
 
 			var url=`${appscriptConfig.workUrl}?action=${action}&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE(action+':'+url);
-		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
+		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user TODO: uncomment here
 		      switch(response.action) {
 		      	case 'create': alert('Đã thêm công việc mới!');break;
 		      	case 'edit': alert('Đã sửa công việc xong!');break;
@@ -859,18 +958,21 @@
 			var pos=p.index+3,ext = p.index, idElmList=['idCapnhatNguoithuchien','idTinhtrangCongviec'];
 			const {vals,idxs,hiddenValue}=macroTagActiveGetValues(idElmList,ext,p,1,'editFormLastData'+ext);
 			var lastData = JSON.parse(hiddenValue), today = getTodayJSON();
+			var fileList=getFileUploadedIdList(p);
+
+			var noLines = lastData.nguoigui.hoten.split('\n').length;
 
 			var queryData={
-				thuchien:{ok:1, nguoigui:{hoten:appendLine(lastData.nguoigui.hoten,mainData.user.hoten),maAcv:appendLine(lastData.nguoigui.maAcv,mainData.user.maAcv)},
-					ngaygui:{full:appendLine(lastData.ngaygui.full,today.full), short:appendLine(lastData.ngaygui.short,today.short)},
+				thuchien:{ok:1, nguoigui:{hoten:appendLine(lastData.nguoigui.hoten,mainData.user.hoten),maAcv:appendLine(lastData.nguoigui.maAcv,mainData.user.maAcv,noLines)},
+					ngaygui:{full:appendLine(lastData.ngaygui.full,today.full,noLines), short:appendLine(lastData.ngaygui.short,today.short,noLines)},
 					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
-					tinhtrang:{noidung:appendLine(lastData.tinhtrang.noidung,vals[1]) }}};
+					tinhtrang:{noidung:appendLine(lastData.tinhtrang.noidung,vals[1],noLines)},files:{noidung:appendLine(lastData.files.noidung,fileList,noLines)} }};
 			
 			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
 		  	logE('edit:'+url);
 		  	callGasApi(url,true).then(gasApiCb).then(response=>{// merge data + main.user
 		      switch(response.action) {
-		      	case 'edit': alert('Đã sửa công việc xong!');break;
+		      	case 'edit': alert('Đã cập nhật tình trạng công việc xong!');break;
 		      	default: alert('Không xác định công việc, debug:'+JSON.stringify(response));
 		      }
 		      logF(dataToMem);
@@ -881,14 +983,15 @@
 		dataSubmitTask=(p)=>{
 			var keySelect=p.state==0?['idNguoihoanthanh','idKetquahoanthanh']:['idNguoixintamdung','idLydotamdung'];
 			const {vals,idxs}=macroTagActiveGetValues(keySelect,p.index,p,1);
+			var fileList=getFileUploadedIdList(p);
 			
 			Array.from(document.getElementsByClassName('pheduyet')).forEach((submitBtn)=>{submitBtn.disabled=true});
 			var hoanthanhData=()=>({hoanthanh:{ok:1,nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},ngayhoanthanh:getTodayJSON(),
 				nguoihoanthanh:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
-				ketqua:vals[1],pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
+				ketqua:vals[1],files:fileList,pheduyet:{ok:0}},tinhtrang:'Hoàn thành, Chờ duyệt'})
 			var tamdungData=()=>({tamdung:{ok:1,nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},ngayxintamdung:getTodayJSON(),
 				nguoixintamdung:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
-				lydo:vals[1],pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
+				lydo:vals[1],files:fileList,pheduyet:{ok:0}},tinhtrang:'Tạm dừng, Chờ duyệt'})
 			var queryData=p.state==0?hoanthanhData():tamdungData();
 			var pos = p.index+3;
 			
@@ -906,10 +1009,11 @@
 		dataConfirmTask=(p)=>{
 			var keySelect=p.state==0?['idNguoikhongphe','idNoidungkophe']:['idNguoipheduyet','idNoidungphe'];
 			const {vals,idxs}=macroTagActiveGetValues(keySelect,p.index,p,1);
+			var fileList=getFileUploadedIdList(p);
 
 			elmLoop(obDulieu.list,'pheduyet',submitBtn=>submitBtn.disabled=true);
 			var pheduyetData={ok:(2-p.state),nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
-				ngaypheduyet:getTodayJSON(),nguoipheduyet:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),noidung:vals[1]};
+				ngaypheduyet:getTodayJSON(),nguoipheduyet:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),noidung:vals[1],files:fileList};
 			var tinhtrang=(pheduyetData.ok==2?'Từ chối yêu cầu,':'')+(p.source=='hoanthanh'?'Hoàn thành':'Tạm dừng');
 			var queryData={}; queryData[p.source]={pheduyet:pheduyetData}; queryData.tinhtrang=tinhtrang;
 			var pos = p.index+3;
@@ -955,6 +1059,7 @@
 			return hiddenInputId?{vals:vals,idxs:idxs,hiddenValue:p.elm.form[hiddenInputId].value}:{vals:vals,idxs:idxs};
 		}
 
+		
 	</script>
 	<script description="dataPrototype">
 		User=(p)=>{var thisOb=this;['hoten','email','maAcv','uid','rowIdx','chucdanh','donvi','maquyen'].forEach((k)=>{thisOb[k]=p[k]});}
@@ -1049,8 +1154,8 @@
   <script type="text/javascript">
 		var appscriptConfig = {
 		  userUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
-		  workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
-		  // workUrl:'https://script.google.com/macros/s/AKfycby_LfQmKOnJncPl5ccreEOomj4O34Rl6-GH88RLbnobijv8YVc/exec'//Debug
+		  // workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
+		  workUrl:'https://script.google.com/macros/s/AKfycby_LfQmKOnJncPl5ccreEOomj4O34Rl6-GH88RLbnobijv8YVc/exec'//Debug
 		}
 		callGasApi=(url,isJson)=>new Promise(dataCb=>{fetch(url).then(r=>(r.ok)?isJson?r.json():r.blob():alertEr(NetEr,'GasApi')).then(dataCb).catch(er=>alertEr(FetchEr,er));})
 		gasApiCb=data=>new Promise((dataCb,errorCb)=>(data.status==false||data.message.error != undefined)?errorCb(data.message):dataCb(data.message))
@@ -1069,7 +1174,7 @@
 		nameShort=(name)=>{var ns=name.split(' '); return (ns.length>1 && ns[0].search(/(Mr)||(Mrs)||(Ms)/i)>-1)?lastWord(name):name}
 		lastWord=(word)=>word.slice(word.lastIndexOf(' ')+1);
 
-		appendLine=(lastLine,nextLine)=>lastLine.length>0?lastLine+'\n'+nextLine:nextLine;
+		appendLine=(lastLine,nextLine,numOfLines)=>lastLine.length>0?lastLine+'\n'+nextLine:('\n'.repeat(numOfLines)+nextLine);
 
 		lookForMadonvi=(tenDonvi)=>obSidebar.data[1].i.reduce((out,item,idx)=>(out==item)?obSidebar.data[1].c[idx]:out,tenDonvi);
 
@@ -1111,6 +1216,12 @@
   <!-- CustomScript -->
   <script src="lib/libScript.js"></script>
   <script src="lib/testScript.js"></script>
+
+  <script src="lib/googleDriveScript.js"></script>
+  <script src="lib/uploadFile-js.js"></script>
+  <script description="googleDriveScript">
+  	const fLimit = 30*1024*1024;
+  </script>
   
   <script src="lib/autocomplete-js.js"></script>
   <link rel="stylesheet" type="text/css" href="lib/autocomplete-css.css">
@@ -1125,6 +1236,7 @@
   	}
   	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
   </script>
+  
   <script>
   	// description="Materialize Init"
 	initScriptMaterialize=()=>{logF(initFab);M.Collapsible.init(document.querySelectorAll('.collapsible'), {});}
@@ -1134,8 +1246,9 @@
   	//Credit to:https://stackoverflow.com/questions/8835413/difference-between-load-vs-domcontentloaded
   	document.addEventListener("DOMContentLoaded", ()=>{
   		logF(checkLocalStorage);
-  		logF(initFirebaseApp,{callback:()=>{logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);uiReady=true;}});
+  		logF(initFirebaseApp,{callback:()=>{logF(checkAccessToken);logF(onInitUploadEvent,'.fileUploadOnce');logF(initScriptMaterialize);logF(initScriptUI);logF(dataToMem);uiReady=true;}});
   	});
+
   </script>
 </body>
 </html>

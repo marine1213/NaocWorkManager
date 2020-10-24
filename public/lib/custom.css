@@ -16,6 +16,7 @@
 	.m0px{margin: 0}
 	.mT10p{margin-top: 10px}
 	.mb4p{margin-bottom: 4px}
+	.m5p{margin: 5px}
 
 	.txOnImg{text-shadow: 1px 1px #000;}
 	.txBold{font-weight: bold;}
@@ -44,6 +45,10 @@
 	.overYAuto{overflow-y: auto;}
 	.lv4{z-index:4}
 	label{font-size: 12px}
+
+	.fadeUnder{opacity: 50%;position: relative;}
+	.fadeAbove{top:0;left:0;position: absolute;}
+	.fadeContainer{position: relative;}
 /*=======================================*/
 
 /*description="circle"*/

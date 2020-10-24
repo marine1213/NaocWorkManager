@@ -21,6 +21,7 @@ initFirebaseApp = (p)=>{
                     /*Signed out.*/window.location.assign('signin.html');}, 
     (error)=>{logE(null,error);});
 };
+
 deinitFirebaseApp = (p)=>{
   firebase.auth().onAuthStateChanged(
     (user)=>{(user)?/*Signed in.*/onSignOut()://user.getIdToken().then((accessToken)=>{__})
@@ -44,14 +45,14 @@ processUserData=(user,callback)=>{
         callGasApi(signupUrl,true).then(gasApiCb).then(data=>{alert(`Đã đăng ký email ${data.email} thành công!`);window.location.assign('/');},
           er=>alertEr('Error signup',er));
       }
-    )
+    );
+
 }
 
 const NetEr='Network response was not ok';
 const FetchEr='There has been a problem with fetch operation';
 alertEr=(description,er)=>{alert(description+':'+er);logE(description,er);}
 
-//`Error:${data.message.error}-${data.message.text}`
 
 // fetch('flowers.jpg')
 //   .then(response => {
