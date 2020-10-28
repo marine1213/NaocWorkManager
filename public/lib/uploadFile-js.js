@@ -39,13 +39,13 @@
 	fileUploadCompleted = (elmParent,fileName,fileId,thumbnailIdx)=>{//add file preview
 		var thumbnailElm = elmParent.getElementsByClassName('flexThumbnailContainer')[0]; //the first is the only
 		var loadingElm = thumbnailElm.getElementsByClassName('customFileItem')[thumbnailIdx];
-		var thumbnailUrl = getThumbnailUrl(fileId);
+		var thumbnailUrl = getThumbnailUrl(fileId), driveUrl = getDriveUrl(fileId);
 		replaceLoadedImage=()=>{
 			loadingElm.innerHTML = `<div class="frameThumbnail">
 										<img src="./icons/svg/753/753345.svg" class="closeOnTopThumbnail" onclick="onRemoveFilePreview(this.parentElement.parentElement,'${fileId}')" width="20px">
-										<img width="80px" src="${thumbnailUrl}" onclick="window.open('${getDriveUrl(fileId)}')" alt="Lỗi Ảnh" >
+										<img width="80px" src="${thumbnailUrl}" onclick="window.open('${driveUrl}')" alt="Lỗi Ảnh" >
 								</div>
-								<label onclick="window.open('${getDriveUrl(fileId)}')">${fileName}</label>
+								<label onclick="window.open('${driveUrl}')">${fileName}</label>
 								<input type="text" class="hidden fileUploadedId" value="${fileId}?${fileName}">`;
 		}
 		replaceLoadedImage();

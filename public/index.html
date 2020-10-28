@@ -157,7 +157,7 @@
 	</div>
 	<script description="overlaySidebar">
 	var obSidebar = {data:[
-		{n:'Thông dụng',i:['Công việc của tôi','Công việc đơn vị','Công việc trung tâm'],c:['mine','mygroup','NAOC']},
+		{n:'Thông dụng',i:['Công việc của tôi','Công việc tôi phụ trách','Công việc đơn vị','Công việc trung tâm'],c:['mine','managing','mygroup','NAOC']},
 		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng','Quản lý CHK Nà Sản'],
 			c:['TBTTDD','CDD','BTSD','MTKB','VPKB','CHKNS']},
 		],active:{g:0,i:0}};
@@ -205,7 +205,8 @@
     	itNormalCl.split(' ').map((cl)=>{newElmCl.remove(cl);selectedElmCl?selectedElmCl.add(cl):''});
     }
 
-    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param);logF(initAutoStaffList);logF(onInitUploadEvent,'.fileUpload');};
+    sidebarItemClick=(param)=>{setSidebarItemClicked(param);logF(mainPopulateContent,param);logF(initAutoStaffList);logF(initAutoQuyenxemcongviec);
+    	logF(onInitUploadEvent,'.fileUpload');};
 
     sidebarSearch=(p)=>{
     	var searchVal=p.elm.value.toUpperCase();
@@ -369,7 +370,7 @@
 						<div class="pLR15px collapsible-body m0px">
 							<form autocomplete="off" class="w3-row" name="idGiaoviecForm" id="idGiaoviecForm">
 								<div class="w3-col s12 m4  w3-container">
-									<label for="idNguoigiao">Người giao</label><input type="text" name="idNguoigiao" class="classNguoigiao classFastMode">
+									<label for="idNguoigiao">Người giao việc</label><input type="text" name="idNguoigiao" class="classNguoigiao classFastMode">
 								</div>
 								<div class="w3-col s12 m4  w3-container">
 									<label for="idPhutrach">Người phụ trách</label><input type="text" name="idPhutrach" class="classPhutrach">
@@ -387,8 +388,11 @@
 								<div class="w3-col s8 m4 w3-container">
 									<label for="idNgayYeucau">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau">
 								</div>
-								<div class="w3-col s12 w3-container">
+								<div class="w3-col s12 m8 w3-container">
 									<label for="idTencongviec">Tên công việc</label><input type="text" name="idTencongviec">
+								</div>
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idQuyenxemcongviec">Quyền xem công việc</label><input type="text" name="idQuyenxemcongviec" class="classQuyenxemcongviec">
 								</div>
 								<div class="w3-col s12 w3-container mb4p">
 									<label for="idNoidungchitiet">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet"></textarea>
@@ -451,8 +455,15 @@
 					var hoanthanhOk=item.hoanthanh.ok.length>0,hoanthanhPheduyetOk=(item.hoanthanh.pheduyet.ok.length>0&&hoanthanhPheduyetOkCode>0);
 					var tamdungOk=item.tamdung.ok.length>0,tamdungPheduyetOk=(item.tamdung.pheduyet.ok.length>0&&tamdungPheduyetOkCode>0);
 
-					fileUploadSnippet=(partName)=> `<div class="w3-col s12 flexThumbnailContainer">
-										<!-- <div class="customFileItem">
+					appendThumbnail=(fileId,fileName)=>[0].reduce((url)=>`<div class="customFileItem"><div class="frameThumbnail">
+										<img src="./icons/svg/753/753345.svg" class="closeOnTopThumbnail" onclick="onRemoveFilePreview(this.parentElement.parentElement,'${fileId}')" width="20px">
+										<img width="80px" src="${url.thumbnail}" onclick="window.open('${url.drive}')" alt="Lỗi Ảnh"></div>
+								<label onclick="window.open('${url.drive}')">${fileName}</label><input type="text" class="hidden fileUploadedId" value="${fileId}?${fileName}">
+								</div>`,{thumbnail:getThumbnailUrl(fileId),drive:getDriveUrl(fileId)});
+
+					fileUploadSnippet=(partName,fileListStr)=> `<div class="w3-col s12 flexThumbnailContainer">
+						${fileListStr?fileListStr.split(',').map(fileStr=>[0].reduce((fSplit)=>appendThumbnail(fSplit[0],fSplit[1]),fileStr.split('?'))).join(''):''}
+										<!-- <div class="customFileItem"> TODO:add thumbnail here for editing
 											<div class="frameThumbnail">
 												<img src="./icons/svg/753/753345.svg" class="closeOnTopThumbnail" onclick="this.parentElement.parentElement.remove();return false" width="20px">
 												<img width="80px" src="https://drive.google.com/thumbnail?authuser=0&sz=w80&id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp" onclick="window.open('https://drive.google.com/open?id=1LZQ9DItPhTGp2tpSvIeIsJzRGnhicVGp')">
@@ -567,7 +578,7 @@
 					var giaoviec = item.giaoviec;
 					var elmEditForm = `<form class="w3-row hidden classEditForm" name="idGiaoviecForm${index}" id="idGiaoviecForm${index}" autocomplete="off">
 								<div class="w3-col s12 m4 w3-container">
-									<label for="idNguoigiao${index}">Người giao</label><input class="inputTag hidden" id="inputTagNguoigiao${index}" value='${JSON.stringify(giaoviec.nguoigiao)}'>
+									<label for="idNguoigiao${index}">Người giao việc</label><input class="inputTag hidden" id="inputTagNguoigiao${index}" value='${JSON.stringify(giaoviec.nguoigiao)}'>
 									<input type="text" name="idNguoigiao${index}" class="classNguoigiao">
 								</div>
 								<div class="w3-col s12 m4 w3-container">
@@ -588,12 +599,16 @@
 								<div class="w3-col s8 m4 w3-container">
 									<label for="idNgayYeucau${index}">Ngày yêu cầu hoàn thành</label><input type="date" name="idNgayYeucau${index}">
 								</div>
-								<div class="w3-col s12 w3-container">
+								<div class="w3-col s12 m8 w3-container">
 									<label for="idTencongviec${index}">Tên công việc</label><input type="text" name="idTencongviec${index}">
+								</div>
+								<div class="w3-col s12 m4 w3-container">
+									<label for="idQuyenxemcongviec">Quyền xem công việc</label><input class="inputTag hidden" id="inputTagQuyenxemcongviec${index}" value='${item.maquyenxemcongviec}'>
+									<input type="text" name="idQuyenxemcongviec${index}" class="classQuyenxemcongviec">
 								</div>
 								<div class="w3-col s12 w3-container">
 									<label for="idNoidungchitiet${index}">Nội dung chi tiết</label><textarea class="materialize-textarea" id="idNoidungchitiet${index}"></textarea>
-									${fileUploadSnippet('SuaCongviec')}
+									${fileUploadSnippet('SuaCongviec',item.noidung.files)}
 								</div>
 								<div class="w3-cell-row">
 									<div class="w3-cell w3-center" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskContentGetUI,{elm:this,index:${index}})">Xác nhận sửa</button></div>
@@ -659,7 +674,7 @@
 									<p><label><input type="checkbox"/><span></span></label><span class="pR4px txBlack">${item.noidung.tomtat}</span>${elmTags}</p>
 								</div>
 								<div class="w3-cell w3-cell-middle width15 txCenter"><p>${item.giaoviec.ngaygiao.short}</p></div>
-								<div class="w3-cell w3-cell-middle width15 txLeft"><p><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.chutri.ten}</p></div>
+								<div class="w3-cell w3-cell-middle width15 txCenter"><img src=${item.giaoviec.chutri.img?item.giaoviec.chutri.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30"><p>${item.giaoviec.nguoinhan.hoten}</p></div>
 							</div>
 						</div>
 						<div class="pLR15px collapsible-body m0px">
@@ -672,7 +687,7 @@
 								</div>
 								<div class="w3-cell w3-cell-middle width15 w3-hide-small txCenter"><p>${item.giaoviec.thoihan.short}</p>
 								</div>
-								<div class="w3-cell w3-cell-middle width15 w3-hide-small txLeft"><p><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30">${item.giaoviec.nguoigiao.ten}</p>
+								<div class="w3-cell w3-cell-middle width15 w3-hide-small txCenter"><img src=${item.giaoviec.nguoigiao.img?item.giaoviec.nguoigiao.img:'"https://www.w3schools.com/w3css/img_avatar1.png"'} class="show400px w3-circle padAvatar width30"><p>${item.giaoviec.nguoigiao.hoten}</p>
 								</div>
 							</div>
 							<br>
@@ -715,14 +730,22 @@
 					item.tempTags=tempTags; // bổ sung tempTags để lọc theo tags, các tags mới: Quá hạn/Hết hạn hôm nay/Mới sẽ ko có trong tình trạng
 					return (Object.keys(tempTags).map((k)=>{return`<a class="w3-tag ${k} w3-round">${tempTags[k]}</a>`;})).join('<a class="pR4px">');
 				}
-				onInputTagAdded=(inpElm,arr,idx,params)=>{
+				onStaffNGroupInputTagAdded=(inpElm,arr,idx,params)=>{
 					var staffId=mainData.staff.idxs[params.viewState][params.sectionKey][idx]; //[BGDKB][Donvinhan][0]
-					var htmlTag=`<a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="${params.clName}TagActive" id="tagActive${staffId}">${arr[idx]}</a>
-					<i class="ptr" onclick="this.parentElement.remove();">&times</i></div>`;
+					var htmlTag=`<span><a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="${params.clName}TagActive" id="tagActive${staffId}">${arr[idx]}</a>
+					<i class="ptr" onclick="this.parentElement.parentElement.remove();">&times</i></div> </span>`;
 					inpElm.parentElement.children[0].insertAdjacentHTML('afterend',htmlTag);
 					inpElm.value = '';
 				}
-				parseTagsForInput=()=>{
+
+				const permitCode=[8,4,2,1,0];
+				onFixedInputTagAdded=(inpElm,arr,idx,params)=>{
+					var htmlTag=`<span><a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="${params.clName}TagActive" id="tagActive${permitCode[idx]}">${arr[idx]}</a> <i class="ptr" onclick="this.parentElement.parentElement.parentElement.getElementsByClassName('classQuyenxemcongviec')[0].disabled=false; this.parentElement.parentElement.remove();">&times</i></div></span>`;
+					inpElm.parentElement.children[0].insertAdjacentHTML('afterend',htmlTag);
+					inpElm.value = '';inpElm.disabled = true;
+				}
+
+				parseTagsForStaffNGroupInput=()=>{
 			  		var viewState=mainData.view.state=='NAOC'?'BGDKB':mainData.view.state;
 					tagValueEachEditForm=(itemForm)=>{
 						var formIndex=itemForm.id.replace('idGiaoviecForm','');
@@ -744,7 +767,7 @@
 								}
 
 								var staffId=mainData.staff.idxs[viewScope][sectionKey][dataIdx]; //[BGDKB][Donvinhan][0]
-								var htmlTag=`<a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="class${sectionKey}TagActive" id="tagActive${staffId}">${item}</a><i class="ptr" onclick="this.parentElement.remove();">&times</i></div>`;	
+								var htmlTag=`<span><a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="class${sectionKey}TagActive" id="tagActive${staffId}">${item}</a><i class="ptr" onclick="this.parentElement.remove();">&times</i></div></span>`;	
 								return htmlTag + out;
 							}
 							var tagList=savedOb[key].split(', ').reduce(tagValueEachItem,'');
@@ -755,20 +778,34 @@
 					Array.from(obDulieu.list.getElementsByClassName('classEditForm')).forEach(tagValueEachEditForm);
 				}
 
+				parseTagsForQuyenxemInput=()=>{
+					tagValueEachEditFormQuyenxem=(itemForm)=>{
+						var formIndex=itemForm.id.replace('idGiaoviecForm',''), clName = 'Quyenxemcongviec';
+						var inputOb = itemForm['inputTag'+clName+formIndex], savedCode = inputOb.value;
+						var idx = permitCode.reduce((out,c,idx)=>c==savedCode?idx:out,-1);
+						if(idx==-1) 
+							return;
+						var htmlTag=`<span><a class="pR4px"></a><div class="w3-tag sthoanthanh w3-round mb4p"><a class="${clName}TagActive" id="tagActive${permitCode[idx]}">${permitCodeName[idx]}</a> <i class="ptr" onclick="this.parentElement.parentElement.parentElement.getElementsByClassName('classQuyenxemcongviec')[0].disabled=false; this.parentElement.parentElement.remove();">&times</i></div></span>`;
+						inputOb.insertAdjacentHTML('afterend',htmlTag);
+						inputOb.parentElement.getElementsByClassName('class'+clName)[0].disabled = true;
+					}
+					Array.from(obDulieu.list.getElementsByClassName('classEditForm')).forEach(tagValueEachEditFormQuyenxem);
+				}
+
 				dataFilter=(item, filter)=>{
 					var giaoviec = item.giaoviec;
 					analyzeSidebarSearchTerm=()=>{var gvChutri = giaoviec.chutri;switch(filter.sidebarSearchTerm){
 						case 'NAOC': return true;
 						case 'mygroup': 
 							return gvChutri.madonvi.indexOf(mainData.user.madonvi)>-1||giaoviec.donvi.madonvi.indexOf(mainData.user.madonvi)>-1;
-						case 'mine': return gvChutri.hoten==mainData.user.hoten || giaoviec.nguoinhan.hoten==mainData.user.hoten;
+						case 'managing': return gvChutri.hoten==mainData.user.hoten;
+						case 'mine': return giaoviec.nguoinhan.hoten==mainData.user.hoten;
 						case 'TBTTDD': case 'CDD': case 'BTSD': case 'MTKB': case'VPKB': case 'CHKNS':
 							return gvChutri.madonvi.indexOf(filter.sidebarSearchTerm)>-1||giaoviec.donvi.madonvi.indexOf(filter.sidebarSearchTerm)>-1;
 						case 'Duan': return giaoviec.duan==filter.sidebarSearchTx;
 						default: return true;}}
 					analyzeMainSearchTerm=(isolatedItem,lastResult)=>{var t=typeof isolatedItem;
-						return (t=='string')?(lastResult||isolatedItem.search(filter.mainSearchTerm)>-1):(t=='array')? false:
-						Object.keys(isolatedItem).reduce((last,k1)=>analyzeMainSearchTerm(isolatedItem[k1],last),lastResult);
+						return (t=='string')?(lastResult||isolatedItem.search(filter.mainSearchTerm)>-1):(t=='array')? false:Object.keys(isolatedItem).reduce((last,k1)=>analyzeMainSearchTerm(isolatedItem[k1],last),lastResult);
 					}
 					return (analyzeSidebarSearchTerm()&&(filter.mainSearchTerm.length==0?true:analyzeMainSearchTerm(item,false)));
 				}
@@ -872,7 +909,7 @@
 				mainData.staffList=mapJsonValue(response.header,decompressSheetValues(response.values));
 				// mainData.staffAutoList=mainData.staffList.map(item=>item.hoten); //TODO: viet lai
 				mainData.staff = staffGrouping(mainData.staffList);
-				logF(initAutoStaffList);
+				logF(initAutoStaffList);logF(initAutoQuyenxemcongviec);
 			},er=>alertEr('GasApiError',er));
 		}
 
@@ -917,18 +954,21 @@
 		taskContentGetUI=(p)=>{// get data from input //send to gas //add to mainData // update main ui mainData.congviecList.push(p);
 			p.elm.disabled=true;
 			var ext=p.index==-1?'':p.index, action=p.index==-1?'create':'edit', pos=p.index+3;
-			var idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
-			const {vals,idxs}=macroTagActiveGetValues(idElmList,ext,p,4);
+			var idElmList=['idNguoigiao','idPhutrach','idDonvinhan','idNguoinhan','idQuyenxemcongviec','idDuan','idNgayYeucau','idTencongviec','idNoidungchitiet'];
+			const {vals,idxs}=macroTagActiveGetValues(idElmList,ext,p,5);
 			var fileList=getFileUploadedIdList(p);
 
-			var homnay=getToday(), thoihan=(vals[5].length>0)?formatFormDate(vals[5].split('-'),1):undefined;
+			var homnay=getToday(), thoihan=(vals[6].length>0)?formatFormDate(vals[6].split('-'),1):undefined;
 			var queryData={id:{},
 				giaoviec:{ngaygui:homnay,  // 04/10/2020
 					nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
 					nguoigiao:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
 					chutri:idxs[1].length==0?getPersonJSON(vals[1]):getStaffJSON(idxs[1]),donvi:idxs[2].length==0?getDonvinhanJSON(vals[2]):getDonvinhanListJSON(idxs[2]),//{ten:vals[2],madonvi:'TBTTDD'}
 					nguoinhan:idxs[3].length==0?getPersonJSON(vals[3]):getStaffJSON(idxs[3]),
-					duan:vals[4],thoihan:getDateJSON(thoihan)},tinhtrang:"Đang thực hiện",noidung:{tomtat:vals[6],daydu:vals[7],files:fileList}};
+					duan:vals[5],thoihan:getDateJSON(thoihan)},
+				tinhtrang:"Đang thực hiện",
+				noidung:{tomtat:vals[7],daydu:vals[8],files:fileList},
+				maquyenxemcongviec:idxs[4][0]?idxs[4][0]:0};
 			
 			if(action=='create') queryData.giaoviec.ngaygiao = getDateJSON(homnay); // {full:'04/10/2020',short:'04/10'}
 
@@ -942,14 +982,18 @@
 		      }
 		      logF(dataToMem);
 		      p.elm.disabled=false;
-		      idElmList.forEach((k,idx)=>{p.elm.form[k+ext].value = ''; Array.from(p.elm.form.getElementsByClassName(k.replace('id','class')+'TagActive')).forEach(elm=>elm.parentElement.remove())});
+		      idElmList.forEach((k,idx)=>{
+		      	p.elm.form[k+ext].value = ''; var isQuyenxemElm = (k=='idQuyenxemcongviec');
+		      	enableQuyenXemElm=(elm)=>elm.parentElement.parentElement.parentElement.getElementsByClassName('classQuyenxemcongviec')[0].disabled=false;
+		      	Array.from(p.elm.form.getElementsByClassName(k.replace('id','class')+'TagActive'))
+		      	.forEach(elm=>{if(isQuyenxemElm) enableQuyenXemElm(elm);elm.parentElement.parentElement.remove()})});
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		taskContentSetUI=(p)=>{
 			var item=mainData.congviecList[p.index];
 			const giaoviecSubkey=['hoten','hoten','hoten','full'], noidungKey=['tomtat','daydu'];
 			var gv=['nguoigiao','chutri','nguoinhan','thoihan'].map((k,idx)=>
-				{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=3?'':(v==undefined?v:formatFormDate(v.split('/'),'-'))});
+				{var v=item.giaoviec[k][giaoviecSubkey[idx]];return idx!=3?'':(v?formatFormDate(v.split('/'),'-'):v)});
 			tryLoop(['idNguoigiao','idPhutrach','idNguoinhan','idNgayYeucau'],(k,idx)=>{p.elm[k+p.index].value=gv[idx]});
 			tryLoop(['idTencongviec','idNoidungchitiet'],(k,idx)=>{p.elm[k+p.index].value=item.noidung[noidungKey[idx]]});
 		}
@@ -1154,8 +1198,8 @@
   <script type="text/javascript">
 		var appscriptConfig = {
 		  userUrl:'https://script.google.com/macros/s/AKfycbxBeG7SIkZb5wR-vzTvBepIxgfD1WIkmK4SbHKFuMZs2F7AO_x7/exec',
-		  // workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
-		  workUrl:'https://script.google.com/macros/s/AKfycby_LfQmKOnJncPl5ccreEOomj4O34Rl6-GH88RLbnobijv8YVc/exec'//Debug
+		  workUrl:'https://script.google.com/macros/s/AKfycbyhFt7qXpE7XxOE5Elyk5tuHToHLyTo_lkoIJdP1haDXgq1_wM/exec',
+		  // workUrl:'https://script.google.com/macros/s/AKfycby_LfQmKOnJncPl5ccreEOomj4O34Rl6-GH88RLbnobijv8YVc/exec'//Debug
 		}
 		callGasApi=(url,isJson)=>new Promise(dataCb=>{fetch(url).then(r=>(r.ok)?isJson?r.json():r.blob():alertEr(NetEr,'GasApi')).then(dataCb).catch(er=>alertEr(FetchEr,er));})
 		gasApiCb=data=>new Promise((dataCb,errorCb)=>(data.status==false||data.message.error != undefined)?errorCb(data.message):dataCb(data.message))
@@ -1227,14 +1271,20 @@
   <link rel="stylesheet" type="text/css" href="lib/autocomplete-css.css">
   <script description="autocomplete">
   	initAutoStaffList=()=>{
-  		logE('is staff list ready? => '+staffListReady);
+  		logE('initAutoStaffList:is staff list ready? => '+staffListReady);
   		if(!staffListReady) return;
   		var viewState=mainData.view.state=='NAOC'?'BGDKB':mainData.view.state, staffGr=mainData.staff.names[viewState];
   		Object.keys(staffGr).forEach((key,kIdx)=>tryLoop(['class'+key],(clForAuto)=>
-  			elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key],onInputTagAdded,{clName:clForAuto,viewState:viewState,sectionKey:key}))));
-  		logF(parseTagsForInput);
+  			elmLoop(document,clForAuto,e=>autocomplete(e,staffGr[key],onStaffNGroupInputTagAdded,{clName:clForAuto,viewState:viewState,sectionKey:key}))));
+  		logF(parseTagsForStaffNGroupInput);
   	}
   	initAutoDuan=()=>{elmLoop(document,'classDuan',e=>autocomplete(e,obSidebar.origin[2].i));}
+  	const permitCodeName = ['Cấp Ban giám đốc','Cấp Đội trưởng/Chánh văn phòng','Cấp Phó đội trưởng/Phó chánh văn phòng','Cấp Chuyên viên/Kỹ sư','Cấp Nhân viên'];
+  	initAutoQuyenxemcongviec=()=>{
+  		logE('initAutoQuyenxemcongviec:is staff list ready? => '+staffListReady);
+  		if(!staffListReady) return;
+  		elmLoop(document,'classQuyenxemcongviec',e=>autocomplete(e,permitCodeName,onFixedInputTagAdded,{clName:'classQuyenxemcongviec'}));
+  		logF(parseTagsForQuyenxemInput);}
   </script>
   
   <script>
