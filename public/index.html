@@ -158,8 +158,7 @@
 	<script description="overlaySidebar">
 	var obSidebar = {data:[
 		{n:'Thông dụng',i:['Công việc của tôi','Công việc tôi phụ trách','Công việc đơn vị','Công việc trung tâm'],c:['mine','managing','mygroup','NAOC']},
-		{n:'Đơn vị',i:['Thiết bị Thông tin Dẫn đường','Cơ điện đèn','Bảo trì sân đường','Môi trường khu bay','Văn phòng','Quản lý CHK Nà Sản'],
-			c:['TBTTDD','CDD','BTSD','MTKB','VPKB','CHKNS']},
+		{n:'Đơn vị',i:['Đội Thiết bị thông tin dẫn đường','Đội Thiết bị cơ điện đèn sân bay','Đội Bảo trì sân đường','Đội Môi trường khu bay','Văn phòng','Đội Quản lý Cảng hàng không Nà Sản'],c:['TBTTDD','CDD','BTSD','MTKB','VPKB','CHKNS']},
 		],active:{g:0,i:0}};
 
 	const domKList=['idSidebar','idSidebarSearch','idSidebarUserPanel','idSidebarContent','idUserName','idUserSubName',
@@ -699,7 +698,7 @@
 							${elmStateDetail}
 							<br>
 							<div class="w3-cell-row bot10p">
-								<div class="w3-cell w3-center dulieuEditCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskStateEditToggle,{elm:this,index:${index}})">Bổ sung tình trạng công việc</button></div>
+								<div class="w3-cell w3-center nhanvienCtrl" ><button class="w3-button w3-green w97" type="button" onclick="logF(taskStateEditToggle,{elm:this,index:${index}})">Cập nhật tình trạng công việc</button></div>
 							</div> 
 							${elmStateEditForm}
 							<hr>
@@ -962,9 +961,9 @@
 			var queryData={id:{},
 				giaoviec:{ngaygui:homnay,  // 04/10/2020
 					nguoigui:{hoten:mainData.user.hoten,maAcv:mainData.user.maAcv},
-					nguoigiao:idxs[0].length==0?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
-					chutri:idxs[1].length==0?getPersonJSON(vals[1]):getStaffJSON(idxs[1]),donvi:idxs[2].length==0?getDonvinhanJSON(vals[2]):getDonvinhanListJSON(idxs[2]),//{ten:vals[2],madonvi:'TBTTDD'}
-					nguoinhan:idxs[3].length==0?getPersonJSON(vals[3]):getStaffJSON(idxs[3]),
+					nguoigiao:((idxs[0].length==0)||(!idxs[0][0]))?getPersonJSON(vals[0]):getStaffJSON(idxs[0]),
+					chutri:((idxs[1].length==0)||(!idxs[1][0]))?getPersonJSON(vals[1]):getStaffJSON(idxs[1]),donvi:idxs[2].length==0?getDonvinhanJSON(vals[2]):getDonvinhanListJSON(idxs[2]),//{ten:vals[2],madonvi:'TBTTDD'}
+					nguoinhan:((idxs[3].length==0)||(!idxs[3][0]))?getPersonJSON(vals[3]):getStaffJSON(idxs[3]),
 					duan:vals[5],thoihan:getDateJSON(thoihan)},
 				tinhtrang:"Đang thực hiện",
 				noidung:{tomtat:vals[7],daydu:vals[8],files:fileList},
@@ -981,12 +980,15 @@
 		      	default: alert('Không xác định công việc, debug:'+JSON.stringify(response));
 		      }
 		      logF(dataToMem);
+		      // return form to first state
 		      p.elm.disabled=false;
 		      idElmList.forEach((k,idx)=>{
 		      	p.elm.form[k+ext].value = ''; var isQuyenxemElm = (k=='idQuyenxemcongviec');
 		      	enableQuyenXemElm=(elm)=>elm.parentElement.parentElement.parentElement.getElementsByClassName('classQuyenxemcongviec')[0].disabled=false;
 		      	Array.from(p.elm.form.getElementsByClassName(k.replace('id','class')+'TagActive'))
-		      	.forEach(elm=>{if(isQuyenxemElm) enableQuyenXemElm(elm);elm.parentElement.parentElement.remove()})});
+		      	.forEach(elm=>{if(isQuyenxemElm) enableQuyenXemElm(elm);elm.parentElement.parentElement.remove()})
+		      });
+		      Array.from(p.elm.form.getElementsByClassName('flexThumbnailContainer')).forEach(elm=>{elm.innerHTML=''});
 		    },(er)=>{alertEr('GasApiError',er);p.elm.disabled=false;});
 		}
 		taskContentSetUI=(p)=>{
@@ -1004,12 +1006,13 @@
 			var lastData = JSON.parse(hiddenValue), today = getTodayJSON();
 			var fileList=getFileUploadedIdList(p);
 
-			var noLines = lastData.nguoigui.hoten.split('\n').length;
+			var noLines = lastData.nguoigui.hoten.length==0?0:lastData.nguoigui.hoten.split('\n').length;
+			if(idxs[0].length==0) {alert('Lỗi: Phải nhập người thực hiện trong phần cập nhật tình trạng công việc!');p.elm.disabled=false;return;}
 
 			var queryData={
-				thuchien:{ok:1, nguoigui:{hoten:appendLine(lastData.nguoigui.hoten,mainData.user.hoten),maAcv:appendLine(lastData.nguoigui.maAcv,mainData.user.maAcv,noLines)},
+				thuchien:{ok:1, nguoigui:{hoten:appendLine(lastData.nguoigui.hoten,mainData.user.hoten,noLines),maAcv:appendLine(lastData.nguoigui.maAcv,mainData.user.maAcv,noLines)},
 					ngaygui:{full:appendLine(lastData.ngaygui.full,today.full,noLines), short:appendLine(lastData.ngaygui.short,today.short,noLines)},
-					nguoithuchien:idxs[0].length==0?getPersonJSON(vals[0],lastData.nguoithuchien):getStaffJSON(idxs[0],lastData.nguoithuchien),
+					nguoithuchien:getStaffJSON(idxs[0],lastData.nguoithuchien,noLines),
 					tinhtrang:{noidung:appendLine(lastData.tinhtrang.noidung,vals[1],noLines)},files:{noidung:appendLine(lastData.files.noidung,fileList,noLines)} }};
 			
 			var url=`${appscriptConfig.workUrl}?action=edit&email=${mainData.user.email}&uid=${mainData.user.uid}&pos=${pos}&unit=${JSON.stringify(queryData)}`;
@@ -1098,6 +1101,7 @@
 				if(idx<numOfSelectedIdxs){
 					var tempTagActive=Array.from(elm.parentElement.getElementsByClassName(k.replace('id','class')+'TagActive'));
 					idxs[idx]=tempTagActive.map(elm=>(parseInt(elm.id.replace('tagActive',''))));
+					if(tempTagActive[0]) vals[idx]=(vals[idx].length==0)?tempTagActive[0].innerHTML:vals[idx];
 				}
 			});
 			return hiddenInputId?{vals:vals,idxs:idxs,hiddenValue:p.elm.form[hiddenInputId].value}:{vals:vals,idxs:idxs};
@@ -1239,12 +1243,12 @@
 			if(staffIdxList.length==0) throw 'Id list is empty - Staff';
 			var keyList=['hoten','ten','maAcv','madonvi'],tpOb={};// pause adding nameshort
 			staffIdxList.forEach(staffId=>{var staffOb=mainData.staffList[staffId];keyList.forEach((k,idx)=>{tpOb[k]=tpOb[k]?tpOb[k]:[];tpOb[k].push(idx==1?nameShort(staffOb.hoten):staffOb[k])});});
-			return keyList.reduce((out,k)=>{var tpOut=tpOb[k].join(', '); out[k]=appendedOb?(appendedOb[k]+'\n'+tpOut):tpOut; return out;},{});
+			return keyList.reduce((out,k)=>{var tpOut=tpOb[k].join(', '); out[k]=appendedOb?(((appendedOb[k]&&appendedOb[k].length>0)?(appendedOb[k]+'\n'):'')+tpOut):tpOut; return out;},{});
 		}
-		getPersonJSON=(name,appendedOb)=>{
+		getPersonJSON=(name,appendedOb,noLines)=>{
 			var staffIdx = mainData.staffList.reduce((out,item,idx)=>(item.hoten==name)?idx:out,-1);
 			var staffItem = staffIdx>-1?mainData.staffList[staffIdx]:{maAcv:'',madonvi:''};
-			return appendedOb?{hoten:appendLine(appendedOb.hoten,name),ten:appendLine(appendedOb,nameShort(name)),maAcv:appendLine(appendedOb,staffItem.maAcv),madonvi:appendLine(appendedOb,staffItem.madonvi)}:
+			return appendedOb?{hoten:appendLine(appendedOb.hoten,name,noLines),ten:appendLine(appendedOb.ten,nameShort(name,noLines),noLines),maAcv:appendLine(appendedOb.maAcv,staffItem.maAcv,noLines),madonvi:appendLine(appendedOb.madonvi,staffItem.madonvi,noLines)}:
 				{hoten:name,ten:nameShort(name),maAcv:staffItem.maAcv,madonvi:staffItem.madonvi};
 		}
 		getDateJSON=(dateSlashForm)=>dateSlashForm?{full:dateSlashForm,short:dateShort(dateSlashForm)}:{full:'',short:''}
